@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moon Phases Pro v3.0</title> <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        /* Base styles & Font */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #000; /* Base black background */
+            color: #f5f5f7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            overflow-x: hidden; /* Prevent horizontal scroll from stars */
+            position: relative; /* Needed for z-indexing of starry background */
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        /* Starry Background Styling */
+        #starry-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind all other content */
+            overflow: hidden; /* Hide stars that drift off-screen */
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: starDrift 50s linear infinite, starTwinkle 3s infinite alternate;
+        }
+
+        .shooting-star {
+            position: absolute;
+            background: linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0));
+            border-radius: 50% / 10%; /* Elongated shape */
+            opacity: 0;
+            animation: shootingStarAnim 5s ease-in-out infinite;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
+        }
+
+        @keyframes starDrift {
+            from { transform: translateY(0px) translateX(0px); }
+            to { transform: translateY(-100px) translateX(20px); }
+        }
+
+        @keyframes starTwinkle {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        @keyframes shootingStarAnim {
+            0% { opacity: 0; transform: translateX(-200px) translateY(0px) scaleY(1); }
+            10% { opacity: 0.8; transform: translateX(calc(100vw + 100px)) translateY(calc(100vh * 0.3)) scaleY(0.5); }
+            10.1% { opacity: 0; transform: translateX(calc(100vw + 100px)) translateY(calc(100vh * 0.3)) scaleY(0.5); }
+            100% { opacity: 0; transform: translateX(calc(100vw + 100px)) translateY(calc(100vh * 0.3)) scaleY(0.5); }
+        }
+
+        /* Main container styling */
+        .main-container {
+            width: 100%;
+            max-width: 768px;
+            margin: auto;
+            padding: 1.5rem;
+            position: relative; /* Ensure it's above the starry background */
+            z-index: 1;
+        }
+
+        /* Loader Spinner (reused for modal) */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #0A84FF;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Moon Visualization Container */
+        .realistic-moon-container {
+            width: clamp(150px, 50vw, 250px);
+            height: clamp(150px, 50vw, 250px);
+            border-radius: 50%;
+            position: relative;
+            margin: 1rem auto 2rem auto;
+            overflow: hidden;
+            background-color: #1c1c1e; 
+            box-shadow: 0 0 30px rgba(180, 180, 180, 0.15), inset 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .realistic-moon-image {
+            width: 100%; height: 100%; background-size: cover; background-position: center;
+            border-radius: 50%; position: absolute; top: 0; left: 0;
+            transition: background-image 0.5s ease-in-out, opacity 0.5s ease-in-out; 
+            opacity: 1; 
+        }
+        .realistic-moon-image.loaded { 
+            opacity: 1;
+        }
+        .realistic-moon-image[style*="placehold.co"] { 
+            opacity: 1; 
+        }
+
+
+        /* Data Sections Styling */
+        .data-section {
+            background-color: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            animation: fadeInSection 0.6s ease-out forwards;
+        }
+        @keyframes fadeInSection { to { opacity: 1; } }
+        #primary-details { animation-delay: 0.1s; }
+        #secondary-details { animation-delay: 0.2s; }
+        #celestial-viewer-details { animation-delay: 0.3s; }
+        #upcoming-phases { animation-delay: 0.4s; }
+
+
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+        .data-item { text-align: center; }
+        .data-label { font-size: 0.75rem; color: #8e8e93; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-value { font-size: 1rem; font-weight: 500; color: #f5f5f7; }
+        .data-value .unit { font-size: 0.875rem; color: #8e8e93; margin-left: 2px; }
+        .data-value span:not(.unit) { display: inline-block; }
+
+        /* Upcoming Phases List */
+        .phase-list-item { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .phase-list-item:last-child { border-bottom: none; }
+        .phase-icon { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-right: 0.75rem; box-shadow: inset 0 0 3px rgba(0,0,0,0.3); }
+        .phase-icon.new-moon { background-color: #333; }
+        .phase-icon.first-quarter { background: linear-gradient(to right, #333 50%, #ccc 50%); }
+        .phase-icon.full-moon { background-color: #ccc; }
+        .phase-icon.last-quarter { background: linear-gradient(to left, #333 50%, #ccc 50%); }
+        .phase-name { font-size: 0.9rem; color: #f5f5f7; flex-grow: 1; }
+        .phase-date { font-size: 0.85rem; color: #8e8e93; text-align: right; }
+
+        /* Refresh Icon Button */
+        .refresh-icon-button {
+            background-color: rgba(60, 60, 67, 0.7); backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);
+            color: #f5f5f7; border: 1px solid rgba(255, 255, 255, 0.1); width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease; margin: 2rem auto 0 auto;
+        }
+        .refresh-icon-button svg { width: 20px; height: 20px; transition: transform 0.5s ease; stroke-width: 1.5; }
+        .refresh-icon-button:hover { background-color: rgba(80, 80, 87, 0.8); }
+        .refresh-icon-button:active { transform: scale(0.95); }
+        .refresh-icon-button:disabled { background-color: rgba(44, 44, 46, 0.6); color: #8e8e93; cursor: not-allowed; transform: scale(1); }
+        .refresh-icon-button:disabled svg { opacity: 0.5; }
+        @keyframes spin-refresh { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .refresh-icon-button svg.refreshing { animation: spin-refresh 1s linear infinite; }
+
+        /* Container for side-by-side action buttons */
+        .action-buttons-container {
+            display: flex;
+            gap: 0.75rem; /* Space between buttons */
+            margin-top: 0.75rem; /* Adjusted margin for button groups */
+        }
+         #celestial-viewer-details .action-buttons-container { /* Specific top margin for this section's buttons */
+            margin-top: 0.5rem;
+        }
+
+
+        /* Action Buttons (Sky Map, Notifications) */
+        .action-button {
+            display: flex;
+            flex-grow: 1; /* Allow buttons to grow and share space */
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            background-color: rgba(0, 122, 255, 0.85); /* Apple blue */
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem; /* Slightly smaller font for side-by-side */
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            border: none;
+        }
+        .action-button svg {
+            width: 18px; /* Slightly smaller icon */
+            height: 18px;
+            margin-right: 0.4rem; /* Adjust space for smaller font/icon */
+            fill: currentColor;
+        }
+        .action-button:hover { background-color: rgba(0, 100, 220, 0.9); }
+        .action-button:active { transform: scale(0.98); }
+        .action-button:disabled { background-color: rgba(142, 142, 147, 0.5); color: rgba(235, 235, 245, 0.6); cursor: not-allowed; }
+
+
+        /* Modal Styling (Apple Inspired) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px) saturate(150%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: rgba(44, 44, 46, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 1.5rem;
+            border-radius: 14px;
+            width: 95%;
+            max-width: 850px; /* Default for sky map */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: scale(0.92);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #notifications-modal .modal-content { /* Specific width for notifications modal */
+             max-width: 500px;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(100, 100, 100, 0.5);
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 18px;
+            line-height: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            z-index: 10;
+        }
+        .modal-close-button:hover {
+            background-color: rgba(120, 120, 120, 0.7);
+            color: white;
+        }
+
+        /* Sky Map Canvas Specific */
+        #sky-map-canvas-container {
+            width: 100%;
+            height: clamp(300px, 60vh, 550px);
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #000; /* Blacker background for sky map */
+        }
+        #sky-map-canvas { display: block; }
+        #sky-map-loader-container {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center; justify-content: center;
+            background-color: rgba(0,0,0,0.7); z-index: 10; border-radius: 8px;
+        }
+        #sky-map-loader-container.hidden { display: none; }
+
+        /* Notification Modal Specific Styles */
+        .notification-group { margin-bottom: 1.5rem; }
+        .notification-group h4 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #a0a0a5; /* Lighter gray for subheadings */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .notification-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+        .notification-item label {
+            font-size: 1rem;
+            color: #f5f5f7;
+            cursor: pointer;
+        }
+        /* Custom Checkbox Style (Apple-like) */
+        .custom-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background-color: rgba(120, 120, 128, 0.36); /* Grayish background */
+            border-radius: 50%; /* Circular */
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .custom-checkbox:checked {
+            background-color: #0A84FF; /* Apple blue for checked */
+            border-color: #0A84FF;
+        }
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -60%) rotate(45deg); /* Centered checkmark */
+        }
+        #save-notifications-button {
+            /* margin-top: 1rem; */ /* Handled by action-buttons-container */
+            background-color: #34C759; /* Apple green for save/confirm */
+        }
+        #save-notifications-button:hover {
+             background-color: #2aa34a;
+        }
+        #download-calendar-button {
+            /* margin-top: 0.75rem; */ /* Handled by action-buttons-container */
+            background-color: #5856D6; /* Apple purple for download/export actions */
+        }
+        #download-calendar-button:hover {
+            background-color: #4946b6;
+        }
+
+
+        /* Custom Message Box */
+        .custom-message-box {
+            position:fixed;
+            top:20px;
+            left:50%;
+            transform:translateX(-50%);
+            background-color:rgba(28, 28, 30, 0.85); /* Consistent with data sections */
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            color:white;
+            padding: 0.75rem 1.25rem;
+            border-radius:10px;
+            z-index:2000;
+            box-shadow:0 4px 15px rgba(0,0,0,0.25);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            opacity: 0;
+            transform: translate(-50%, -20px); /* Start slightly above */
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .custom-message-box.success {
+             background-color: rgba(52, 199, 89, 0.85); /* Apple green */
+        }
+        .custom-message-box.error {
+             background-color: rgba(255, 59, 48, 0.85); /* Apple red */
+        }
+         .custom-message-box.info {
+             background-color: rgba(0, 122, 255, 0.85); /* Apple blue */
+        }
+
+
+        /* Footer */
+        footer { font-size: 0.7rem; color: #8e8e93; margin-top: 2rem; text-align: center; }
+        footer a { color: #0A84FF; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div id="starry-background"></div>
+
+    <div class="main-container">
+        <div id="status" class="text-center mb-6">
+            <div class="loader"></div>
+            <p class="text-sm text-gray-400 mt-2">Fetching location...</p>
+        </div>
+
+        <div id="location-info" class="text-center mb-6 text-xs text-gray-500 hidden">
+            Location: <span id="latitude"></span>°, <span id="longitude"></span>° (<span id="accuracy"></span>m accuracy)
+        </div>
+
+        <div id="content-area" class="hidden">
+            <div class="realistic-moon-container">
+                <div id="realistic-moon-image" class="realistic-moon-image"
+                     onerror="this.style.backgroundImage='url(https://placehold.co/250x250/2c2c2e/cccccc?text=Error)'; console.error('Failed to load initial moon image div.')">
+                </div>
+            </div>
+
+            <div id="primary-details" class="data-section">
+                <h2 id="phase-name" class="text-xl font-semibold text-center mb-1">-</h2>
+                <p class="text-sm text-gray-400 text-center mb-4">Illumination: <span id="illumination-value">-</span>%</p>
+                <div class="data-grid">
+                    <div class="data-item"> <div class="data-label">Moonrise</div> <div id="moonrise" class="data-value">-</div> </div>
+                    <div class="data-item"> <div class="data-label">Moonset</div> <div id="moonset" class="data-value">-</div> </div>
+                    <div class="data-item"> <div class="data-label">Altitude</div> <div class="data-value"><span id="altitude-value">-</span><span class="unit">°</span></div> </div>
+                    <div class="data-item"> <div class="data-label">Azimuth</div> <div class="data-value"><span id="azimuth-value">-</span><span class="unit">°</span></div> </div>
+                </div>
+                <p id="moon-times-message" class="text-xs text-gray-500 text-center mt-3"></p>
+            </div>
+
+            <div id="secondary-details" class="data-section">
+                <div class="data-grid">
+                    <div class="data-item"> <div class="data-label">Distance</div> <div class="data-value"><span id="distance-value">-</span><span class="unit"> km</span></div> </div>
+                    <div class="data-item"> <div class="data-label">Age</div> <div class="data-value"><span id="moon-age-value">-</span><span class="unit"> days</span></div> </div>
+                    <div class="data-item"> <div class="data-label">Zodiac</div> <div id="zodiac" class="data-value">-</div> </div>
+                </div>
+            </div>
+
+            <div id="celestial-viewer-details" class="data-section">
+                <h3 class="text-base font-semibold mb-3 text-gray-300">Celestial Viewer & Tools</h3>
+                <div class="action-buttons-container">
+                    <button id="sky-map-button" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                        View Sky Map
+                    </button>
+                    <button id="notifications-button" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"> <path d="M12 22a2.96 2.96 0 002.75-1.86L13.38 20H10.62l-1.37 2.14A2.96 2.96 0 0012 22zm7-6.42V11c0-3.22-2.03-5.9-5-6.71V3.5C14 2.67 13.1 2 12 2s-2 .67-2 1.5v.79c-2.97.81-5 3.49-5 6.71v4.58L3.29 17.29A1 1 0 004 19h16a1 1 0 00.71-1.71L19 15.58z" />
+                        </svg>
+                        Set Notifications
+                    </button>
+                </div>
+            </div>
+
+            <div id="upcoming-phases" class="data-section">
+                <h3 class="text-base font-semibold mb-3 text-gray-300">Upcoming Phases <span class="text-xs text-gray-500">(Est.)</span></h3>
+                <ul class="phase-list">
+                    <li class="phase-list-item"> <span class="phase-icon new-moon"></span> <span class="phase-name">New Moon</span> <span id="next-new-moon" class="phase-date">-</span> </li>
+                    <li class="phase-list-item"> <span class="phase-icon first-quarter"></span> <span class="phase-name">First Quarter</span> <span id="next-first-quarter" class="phase-date">-</span> </li>
+                    <li class="phase-list-item"> <span class="phase-icon full-moon"></span> <span class="phase-name">Full Moon</span> <span id="next-full-moon" class="phase-date">-</span> </li>
+                    <li class="phase-list-item"> <span class="phase-icon last-quarter"></span> <span class="phase-name">Last Quarter</span> <span id="next-last-quarter" class="phase-date">-</span> </li>
+                </ul>
+            </div>
+
+            <button id="refresh-button" class="refresh-icon-button" title="Refresh Data" disabled>
+                <svg id="refresh-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="sky-map-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="sky-map-modal-close-button" class="modal-close-button">&times;</button>
+            <h3 class="text-lg font-semibold mb-3 text-center text-gray-100">Moon's Sky Position</h3>
+            <div id="sky-map-canvas-container">
+                <canvas id="sky-map-canvas"></canvas>
+                <div id="sky-map-loader-container"> <div class="loader"></div></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-3 text-center">Use mouse/touch to navigate (orbit). Scroll to zoom.</p>
+        </div>
+    </div>
+
+    <div id="notifications-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="notifications-modal-close-button" class="modal-close-button">&times;</button>
+            <h3 class="text-lg font-semibold mb-4 text-center text-gray-100">Notification Preferences</h3>
+             <p class="text-xs text-center text-gray-500 mb-3">Note: Phase notifications require this page to be open around the event time.</p>
+
+            <div class="notification-group">
+                <h4>Moon Phases</h4>
+                <div class="notification-item">
+                    <label for="notify-new-moon">New Moon</label>
+                    <input type="checkbox" id="notify-new-moon" class="custom-checkbox" data-phase-key="newMoon">
+                </div>
+                <div class="notification-item">
+                    <label for="notify-first-quarter">First Quarter</label>
+                    <input type="checkbox" id="notify-first-quarter" class="custom-checkbox" data-phase-key="firstQuarter">
+                </div>
+                <div class="notification-item">
+                    <label for="notify-full-moon">Full Moon</label>
+                    <input type="checkbox" id="notify-full-moon" class="custom-checkbox" data-phase-key="fullMoon">
+                </div>
+                <div class="notification-item">
+                    <label for="notify-last-quarter">Last Quarter</label>
+                    <input type="checkbox" id="notify-last-quarter" class="custom-checkbox" data-phase-key="lastQuarter">
+                </div>
+            </div>
+
+            <div class="notification-group">
+                <h4>Celestial Events</h4>
+                <p class="text-sm text-gray-400">Eclipse notifications and more coming soon!</p>
+            </div>
+            <div class="action-buttons-container"> 
+                <button id="download-calendar-button" class="action-button">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M5.25 2.25A2.25 2.25 0 003 4.5v15A2.25 2.25 0 005.25 21.75h13.5A2.25 2.25 0 0021 19.5V4.5A2.25 2.25 0 0018.75 2.25H5.25zM11.25 9a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5h-1.5zM10.5 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM10.5 15a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM7.5 9a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5H7.5zM6.75 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zM6.75 15a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zM15 9.75a.75.75 0 00-1.5 0v1.5h-1.5a.75.75 0 000 1.5h1.5v1.5a.75.75 0 001.5 0v-1.5h1.5a.75.75 0 000-1.5h-1.5V9.75z" clip-rule="evenodd" />
+                    </svg>
+                    Download Phases to Calendar
+                </button>
+                <button id="save-notifications-button" class="action-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+                    </svg>
+                    Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="pb-4">
+        Designed by Marc Andréas Yao | Powered by <a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a> & <a href="https://threejs.org" target="_blank" rel="noopener noreferrer">Three.js</a> | Moon images source: <a href="https://svs.gsfc.nasa.gov/5415" target="_blank" rel="noopener noreferrer">NASA SVS</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const statusDiv = document.getElementById('status');
+        const locationInfoDiv = document.getElementById('location-info');
+        const contentArea = document.getElementById('content-area');
+        const latSpan = document.getElementById('latitude');
+        const lonSpan = document.getElementById('longitude');
+        const accSpan = document.getElementById('accuracy');
+        const phaseNameSpan = document.getElementById('phase-name');
+        const illuminationValueSpan = document.getElementById('illumination-value');
+        const moonriseSpan = document.getElementById('moonrise');
+        const moonsetSpan = document.getElementById('moonset');
+        const moonTimesMessage = document.getElementById('moon-times-message');
+        const altitudeValueSpan = document.getElementById('altitude-value');
+        const azimuthValueSpan = document.getElementById('azimuth-value');
+        const distanceValueSpan = document.getElementById('distance-value');
+        const zodiacSpan = document.getElementById('zodiac');
+        const moonAgeValueSpan = document.getElementById('moon-age-value');
+        const moonImageDiv = document.getElementById('realistic-moon-image');
+        const refreshButton = document.getElementById('refresh-button');
+        const refreshIconSvg = document.getElementById('refresh-icon-svg');
+        const nextNewMoonSpan = document.getElementById('next-new-moon');
+        const nextFirstQuarterSpan = document.getElementById('next-first-quarter');
+        const nextFullMoonSpan = document.getElementById('next-full-moon');
+        const nextLastQuarterSpan = document.getElementById('next-last-quarter');
+        const starryBackground = document.getElementById('starry-background');
+
+        // Sky Map Modal Elements
+        const skyMapButton = document.getElementById('sky-map-button');
+        const skyMapModal = document.getElementById('sky-map-modal');
+        const skyMapModalCloseButton = document.getElementById('sky-map-modal-close-button');
+        const skyMapCanvas = document.getElementById('sky-map-canvas');
+        const skyMapCanvasContainer = document.getElementById('sky-map-canvas-container');
+        const skyMapLoaderContainer = document.getElementById('sky-map-loader-container');
+
+        // Notifications Modal Elements
+        const notificationsButton = document.getElementById('notifications-button');
+        const notificationsModal = document.getElementById('notifications-modal');
+        const notificationsModalCloseButton = document.getElementById('notifications-modal-close-button');
+        const saveNotificationsButton = document.getElementById('save-notifications-button');
+        const downloadCalendarButton = document.getElementById('download-calendar-button');
+
+
+        // --- Default Location ---
+        const defaultLocation = { latitude: 40.7128, longitude: -74.0060 }; // New York
+
+        // --- Constants ---
+        const LUNAR_CYCLE_DAYS = 29.530588853;
+        const MOON_IMAGE_COUNT = 30; // Reinstated for static image array
+        const ANIMATION_DURATION = 1000;
+        const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+        const NUM_STARS = 100;
+        const NUM_SHOOTING_STARS = 3;
+        const VISUAL_MOON_DISTANCE_IN_SKY_MAP = 50;
+        const MOON_APP_ICON_URL = 'https://placehold.co/96x96/000000/FFFFFF?text=MPP'; // Placeholder icon
+        const NOTIFICATION_CHECK_INTERVAL_MS = 1 * 60 * 1000; // Check for scheduled notifications every 1 minute
+        const MILKY_WAY_TEXTURE_URL = "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/starmap_2020_4k_print.jpg";
+
+
+        // --- State Variables ---
+        let autoRefreshTimer = null;
+        let currentMoonPositionData = null;
+        let notificationCheckTimer = null;
+        let lastCalculatedUpcomingPhases = null; // Store the result of calculateUpcomingPhases
+        let isInitializingSkyMap = false; // Flag to prevent multiple init calls for sky map
+
+        // --- Moon Images Array (Reinstated for static loading) ---
+        const moonPhaseImages = [
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2803.jpg', // 0
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2824.jpg', // 1
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2852.jpg', // 2
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2876.jpg', // 3
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2924.jpg', // 4
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2900.jpg', // 5
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2970.jpg', // 6
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2975.jpg', // 7
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2997.jpg', // 8
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3023.jpg', // 9
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3043.jpg', // 10
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3068.jpg', // 11
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3094.jpg', // 12
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3118.jpg', // 13
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3164.jpg', // 14
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3188.jpg', // 15
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3213.jpg', // 16
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3238.jpg', // 17
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3262.jpg', // 18
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3287.jpg', // 19
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3311.jpg', // 20
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3359.jpg', // 21
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3384.jpg', // 22
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3408.jpg', // 23
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3432.jpg', // 24
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3454.jpg', // 25
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3461.jpg', // 26
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3464.jpg', // 27
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3487.jpg', // 28
+            'https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3498.jpg'  // 29
+        ];
+
+
+        // --- Three.js Scene Variables ---
+        let skyScene, skyCamera, skyRenderer, skyControls, moonMesh, starsPoints, horizonPlane, sunLight, sunMesh, skySphereMesh;
+        let skyMapInitialized = false;
+        let skyMapAnimationId = null;
+        const textureLoader = new THREE.TextureLoader(); 
+        const moonTextureURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/lroc_color_poles_1k.jpg";
+        const moonDisplacementURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/ldem_3_8bit.jpg";
+
+
+        // --- Helper: Custom Message Box ---
+        function showCustomMessage(message, type = 'info', duration = 3000) {
+            const existingBox = document.querySelector('.custom-message-box');
+            if (existingBox) { document.body.removeChild(existingBox); }
+            const messageBox = document.createElement('div');
+            messageBox.classList.add('custom-message-box', type);
+            messageBox.textContent = message;
+            document.body.appendChild(messageBox);
+            setTimeout(() => { messageBox.style.opacity = '1'; messageBox.style.transform = 'translateX(-50%) translateY(0)'; }, 10);
+            setTimeout(() => {
+                messageBox.style.opacity = '0'; messageBox.style.transform = 'translateX(-50%) translateY(-20px)';
+                setTimeout(() => { if (document.body.contains(messageBox)) { document.body.removeChild(messageBox); } }, 300);
+            }, duration);
+        }
+
+
+        // --- Helper Functions ---
+        function formatTime(date) { if (!date || isNaN(date.getTime())) return '–'; return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+        function formatDate(date) { if (!date || isNaN(date.getTime())) return '–'; return date.toLocaleDateString([], { month: 'short', day: 'numeric' }); }
+        function getPhaseName(phaseValue) { if (phaseValue < 0.02 || phaseValue > 0.98) return 'New Moon'; if (phaseValue < 0.23) return 'Waxing Crescent'; if (phaseValue < 0.27) return 'First Quarter'; if (phaseValue < 0.48) return 'Waxing Gibbous'; if (phaseValue < 0.52) return 'Full Moon'; if (phaseValue < 0.73) return 'Waning Gibbous'; if (phaseValue < 0.77) return 'Last Quarter'; return 'Waning Crescent'; }
+        function getPhaseKeyName(phaseKey) { // To get display name from phase key
+            const names = { newMoon: 'New Moon', firstQuarter: 'First Quarter', fullMoon: 'Full Moon', lastQuarter: 'Last Quarter'};
+            return names[phaseKey] || 'Moon Phase';
+        }
+        function getZodiacSign(longitude) { const normalizedLon = (longitude % 360 + 360) % 360; const signs = [ { name: 'Aries', start: 0 }, { name: 'Taurus', start: 30 }, { name: 'Gemini', start: 60 }, { name: 'Cancer', start: 90 }, { name: 'Leo', start: 120 }, { name: 'Virgo', start: 150 }, { name: 'Libra', start: 180 }, { name: 'Scorpio', start: 210 }, { name: 'Sagittarius', start: 240 }, { name: 'Capricorn', start: 270 }, { name: 'Aquarius', start: 300 }, { name: 'Pisces', start: 330 } ]; for (let i = signs.length - 1; i >= 0; i--) { if (normalizedLon >= signs[i].start) return signs[i].name; } return 'Aries'; }
+        function animateCountUp(element, endValue, duration = 1000, decimals = 0, isLocaleString = false) { if (!element) return; const startValue = parseFloat(element.textContent.replace(/,/g, '')) || 0; const range = endValue - startValue; let startTime = null; if (Math.abs(range) < 0.01 && decimals > 0) { element.textContent = isLocaleString ? Math.round(endValue).toLocaleString() : endValue.toFixed(decimals); return; } if (range === 0 && decimals === 0) { element.textContent = isLocaleString ? Math.round(endValue).toLocaleString() : endValue.toFixed(decimals); return; } function step(timestamp) { if (!startTime) startTime = timestamp; const progress = Math.min((timestamp - startTime) / duration, 1); let currentValue = startValue + range * progress; if (isLocaleString) { element.textContent = Math.round(currentValue).toLocaleString(); } else { element.textContent = currentValue.toFixed(decimals); } if (progress < 1) { requestAnimationFrame(step); } else { if (isLocaleString) { element.textContent = Math.round(endValue).toLocaleString(); } else { element.textContent = endValue.toFixed(decimals); } } } requestAnimationFrame(step); }
+        
+        /** Updates the main 2D moon visualization by setting the background image from the static array */
+        function updateMoonVisual(moonAgeDays) {
+            if (!moonImageDiv) return;
+            moonImageDiv.classList.remove('loaded'); 
+
+            let imageIndex = Math.round(moonAgeDays); 
+            imageIndex = Math.max(0, Math.min(MOON_IMAGE_COUNT - 1, imageIndex)); 
+            const imageUrl = moonPhaseImages[imageIndex];
+
+            if (imageUrl) {
+                const img = new Image();
+                img.onload = () => {
+                    moonImageDiv.style.backgroundImage = `url('${imageUrl}')`;
+                    moonImageDiv.classList.add('loaded');
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load static image for index ${imageIndex}: ${imageUrl}`);
+                    moonImageDiv.style.backgroundImage = `url('https://placehold.co/250x250/2c2c2e/cccccc?text=Load+Error')`;
+                    moonImageDiv.classList.add('loaded');
+                };
+                img.src = imageUrl;
+            } else {
+                console.error(`No static image URL defined for index ${imageIndex}`);
+                moonImageDiv.style.backgroundImage = `url('https://placehold.co/250x250/ff0000/ffffff?text=Missing+URL')`;
+                moonImageDiv.classList.add('loaded');
+            }
+        }
+
+
+        function calculateUpcomingPhases(currentPhaseValue, currentDate) { const targetPhases = { newMoon: 0, firstQuarter: 0.25, fullMoon: 0.5, lastQuarter: 0.75 }; const results = {}; const currentTimestamp = currentDate.getTime(); for (const [name, targetPhase] of Object.entries(targetPhases)) { let phaseDifference = targetPhase - currentPhaseValue; if (phaseDifference < -0.01) { phaseDifference += 1; } const daysUntilPhase = phaseDifference * LUNAR_CYCLE_DAYS; const phaseTimestamp = currentTimestamp + daysUntilPhase * 24 * 60 * 60 * 1000; results[name] = new Date(phaseTimestamp); } lastCalculatedUpcomingPhases = results; /* Store globally */ return results; }
+        function createStarryBackground() { if (!starryBackground) return; starryBackground.innerHTML = ''; for (let i = 0; i < NUM_STARS; i++) { const star = document.createElement('div'); star.classList.add('star'); const size = Math.random() * 2 + 0.5; star.style.width = `${size}px`; star.style.height = `${size}px`; star.style.top = `${Math.random() * 100}%`; star.style.left = `${Math.random() * 100}%`; star.style.animationDelay = `${Math.random() * 50}s, ${Math.random() * 3}s`; star.style.animationDuration = `${Math.random() * 30 + 40}s, ${Math.random() * 2 + 2}s`; starryBackground.appendChild(star); } for (let i = 0; i < NUM_SHOOTING_STARS; i++) { const shootingStar = document.createElement('div'); shootingStar.classList.add('shooting-star'); const height = Math.random() * 2 + 1; shootingStar.style.height = `${height}px`; shootingStar.style.width = `${height * (Math.random() * 15 + 10)}px`; shootingStar.style.top = `${Math.random() * 70}%`; shootingStar.style.left = `-${Math.random() * 20 + 20}%`; shootingStar.style.animationDelay = `${Math.random() * 10 + i * 3}s`; shootingStar.style.animationDuration = `${Math.random() * 3 + 3}s`; starryBackground.appendChild(shootingStar); } }
+
+        // --- Sky Map Functions ---
+        function updateSunLightPosition(observerLat, observerLon, date) {
+            if (!sunLight || !skyMapInitialized) return;
+
+            const sunPos = SunCalc.getSunPosition(date, observerLat, observerLon);
+            const astroAzimuth = sunPos.azimuth + Math.PI; 
+
+            const sunDirX = Math.cos(sunPos.altitude) * Math.sin(astroAzimuth);
+            const sunDirY = Math.sin(sunPos.altitude);
+            const sunDirZ = Math.cos(sunPos.altitude) * -Math.cos(astroAzimuth); 
+
+            sunLight.position.set(sunDirX, sunDirY, sunDirZ).normalize(); 
+        }
+
+        function updateSkyDomeAndStarVisibility(date, lat, lon) {
+            if (!skyMapInitialized || !skySphereMesh || !sunMesh || !starsPoints) return;
+
+            const sunPos = SunCalc.getSunPosition(date, lat, lon);
+            const astroAzimuth = sunPos.azimuth + Math.PI;
+            const sunAltitude = sunPos.altitude;
+
+            // Position the visible Sun mesh
+            const sunMeshX = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5 * Math.cos(sunAltitude) * Math.sin(astroAzimuth); // Place Sun further out
+            const sunMeshY = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5 * Math.sin(sunAltitude);
+            const sunMeshZ = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5 * Math.cos(sunAltitude) * -Math.cos(astroAzimuth);
+            sunMesh.position.set(sunMeshX, sunMeshY, sunMeshZ);
+
+            // Day/Night transition
+            const dayNightThreshold = -0.1; // Radians, slightly below horizon for smoother transition
+            if (sunAltitude > dayNightThreshold) { // Daytime
+                skySphereMesh.material.map = null; // Remove Milky Way texture
+                skySphereMesh.material.color.setHex(0x6699FF); // Light blue sky
+                skySphereMesh.material.opacity = 1;
+                starsPoints.material.opacity = 0.1; // Dim stars
+                sunMesh.visible = true;
+                // console.log("Sky Map: Daytime");
+            } else { // Nighttime
+                if (skySphereMesh.material.userData.milkyWayTexture) {
+                     skySphereMesh.material.map = skySphereMesh.material.userData.milkyWayTexture;
+                }
+                skySphereMesh.material.color.setHex(0xffffff); // Ensure texture is not tinted by color
+                skySphereMesh.material.opacity = 1; // Adjust if needed for Milky Way visibility
+                starsPoints.material.opacity = 0.8; // Full star visibility
+                sunMesh.visible = false; // Sun below horizon
+                // console.log("Sky Map: Nighttime");
+            }
+            skySphereMesh.material.needsUpdate = true;
+            starsPoints.material.needsUpdate = true;
+        }
+
+
+        function initSkyMap() {
+            if (skyMapInitialized) {
+                onSkyMapResize();
+                if (currentMoonPositionData && typeof currentMoonPositionData.latitude === 'number' && typeof currentMoonPositionData.longitude === 'number') {
+                    updateMoonPositionInSkyMap(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                    updateSunLightPosition(currentMoonPositionData.latitude, currentMoonPositionData.longitude, new Date());
+                    updateSkyDomeAndStarVisibility(new Date(), currentMoonPositionData.latitude, currentMoonPositionData.longitude);
+                }
+                skyMapLoaderContainer.classList.add('hidden');
+                if (!skyMapAnimationId) {
+                    console.log("Restarting sky map animation (initSkyMap - already initialized path).");
+                    animateSkyMap();
+                }
+                return; 
+            }
+            
+            isInitializingSkyMap = true; 
+            skyMapLoaderContainer.classList.remove('hidden');
+            try {
+                skyScene = new THREE.Scene();
+                const aspect = skyMapCanvasContainer.clientWidth / skyMapCanvasContainer.clientHeight;
+                skyCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 2000); // Increased far plane for sky sphere
+                skyCamera.position.set(0, 15, VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.2);
+                skyCamera.lookAt(0, 0, 0);
+                skyRenderer = new THREE.WebGLRenderer({ canvas: skyMapCanvas, antialias: true, alpha: true });
+                skyRenderer.setSize(skyMapCanvasContainer.clientWidth, skyMapCanvasContainer.clientHeight);
+                skyRenderer.setPixelRatio(window.devicePixelRatio);
+                
+                const ambientLight = new THREE.AmbientLight(0x404060, 0.6); // Adjusted ambient
+                skyScene.add(ambientLight);
+                const hemisphereLight = new THREE.HemisphereLight(0x606080, 0x202040, 0.4); // Adjusted hemisphere
+                skyScene.add(hemisphereLight);
+                sunLight = new THREE.DirectionalLight(0xffffff, 1.0); // Main sunlight for phasing
+                skyScene.add(sunLight);
+
+                // Sky Sphere with Milky Way
+                const skySphereGeometry = new THREE.SphereGeometry(1000, 64, 64); // Large sphere
+                const skySphereMaterial = new THREE.MeshBasicMaterial({
+                    side: THREE.BackSide,
+                    color: 0x000022, // Default dark blue if texture fails
+                    transparent: true, // Allow opacity changes
+                    opacity: 1
+                });
+                skySphereMaterial.userData = {}; // To store texture reference
+                skySphereMesh = new THREE.Mesh(skySphereGeometry, skySphereMaterial);
+                skyScene.add(skySphereMesh);
+
+                textureLoader.load(
+                    MILKY_WAY_TEXTURE_URL,
+                    (texture) => {
+                        skySphereMaterial.map = texture;
+                        skySphereMaterial.userData.milkyWayTexture = texture; // Store for later
+                        skySphereMaterial.color.setHex(0xffffff); // Ensure texture shows its own colors
+                        skySphereMaterial.needsUpdate = true;
+                        console.log("Milky Way texture loaded.");
+                        // Initial update of sky based on current sun position
+                        if (currentMoonPositionData && typeof currentMoonPositionData.latitude === 'number') {
+                             updateSkyDomeAndStarVisibility(new Date(), currentMoonPositionData.latitude, currentMoonPositionData.longitude);
+                        }
+                    },
+                    undefined,
+                    (err) => {
+                        console.error("Error loading Milky Way texture:", err);
+                        // Sky will remain dark blue as fallback
+                    }
+                );
+
+
+                skyControls = new THREE.OrbitControls(skyCamera, skyRenderer.domElement);
+                skyControls.enableDamping = true; skyControls.dampingFactor = 0.05; skyControls.screenSpacePanning = false;
+                skyControls.minDistance = 10; skyControls.maxDistance = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 2;
+                skyControls.target.set(0, 5, 0); skyControls.update();
+                
+                const horizonGeometry = new THREE.CircleGeometry(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5, 32);
+                const horizonMaterial = new THREE.MeshBasicMaterial({ color: 0x003300, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+                horizonPlane = new THREE.Mesh(horizonGeometry, horizonMaterial);
+                horizonPlane.rotation.x = -Math.PI / 2; horizonPlane.position.y = -0.1; skyScene.add(horizonPlane);
+                
+                const directions = { 'N': [0,0,-1], 'E': [1,0,0], 'S': [0,0,1], 'W': [-1,0,0] };
+                Object.entries(directions).forEach(([label, pos]) => {
+                    const sprite = makeTextSprite(label, { fontsize: 24, fontface: "Arial", textColor: {r:255, g:255, b:255, a:0.8} });
+                    sprite.position.set(pos[0] * VISUAL_MOON_DISTANCE_IN_SKY_MAP * 0.9, pos[1] + 2, pos[2] * VISUAL_MOON_DISTANCE_IN_SKY_MAP * 0.9);
+                    skyScene.add(sprite);
+                });
+                
+                const starVertices = [];
+                for (let i = 0; i < 2000; i++) {
+                    const x = THREE.MathUtils.randFloatSpread(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 4);
+                    const y = THREE.MathUtils.randFloatSpread(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 4);
+                    const z = THREE.MathUtils.randFloatSpread(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 4);
+                    if (new THREE.Vector3(x,y,z).length() < VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5) continue;
+                    starVertices.push(x, y, z);
+                }
+                const starsGeometry = new THREE.BufferGeometry();
+                starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+                const starsMaterial = new THREE.PointsMaterial({ 
+                    color: 0xffffff, 
+                    size: 0.3, 
+                    sizeAttenuation: true, 
+                    transparent: true, 
+                    opacity: 0.8 // Initial night opacity
+                });
+                starsPoints = new THREE.Points(starsGeometry, starsMaterial); skyScene.add(starsPoints);
+                
+                // Sun Mesh
+                const sunGeometry = new THREE.SphereGeometry(3, 32, 32); // Sun visual size
+                const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00, fog: false }); // Bright yellow, not affected by scene fog
+                sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+                sunMesh.visible = false; // Initially hidden, shown by updateSkyDome
+                skyScene.add(sunMesh);
+
+                const moonRadius = 2;
+                const moonSegments = 64; 
+                const moonGeometry = new THREE.SphereGeometry(moonRadius, moonSegments, moonSegments);
+                const moonMaterial = new THREE.MeshStandardMaterial({
+                    roughness: 0.9,
+                    metalness: 0.1,
+                    color: 0xffffff 
+                });
+                moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+                skyScene.add(moonMesh);
+
+                const colorMap = textureLoader.load(
+                    moonTextureURL,
+                    () => { 
+                        moonMaterial.map = colorMap;
+                        moonMaterial.needsUpdate = true;
+                        console.log("Moon color texture loaded.");
+                    },
+                    undefined, 
+                    (err) => { console.error('Error loading moon color texture:', err); }
+                );
+
+                const displacementMap = textureLoader.load(
+                    moonDisplacementURL,
+                    () => { 
+                        moonMaterial.displacementMap = displacementMap;
+                        moonMaterial.displacementScale = 0.1; 
+                        moonMaterial.needsUpdate = true;
+                        console.log("Moon displacement texture loaded.");
+                    },
+                    undefined, 
+                    (err) => { console.error('Error loading moon displacement texture:', err); }
+                );
+
+
+                skyMapInitialized = true; console.log("Sky Map Initialized for the first time.");
+            } catch (error) { console.error("Error initializing Sky Map:", error); skyMapLoaderContainer.innerHTML = `<p class="text-red-400 text-sm">Error loading 3D view.</p>`; return; }
+            finally { 
+                isInitializingSkyMap = false; 
+                setTimeout(() => skyMapLoaderContainer.classList.add('hidden'), 500); 
+            }
+            
+            if (!skyMapAnimationId) {
+                console.log("Starting sky map animation (initSkyMap - first init path).");
+                animateSkyMap();
+            }
+            if (currentMoonPositionData && typeof currentMoonPositionData.latitude === 'number' && typeof currentMoonPositionData.longitude === 'number') {
+                updateMoonPositionInSkyMap(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                updateSunLightPosition(currentMoonPositionData.latitude, currentMoonPositionData.longitude, new Date());
+                updateSkyDomeAndStarVisibility(new Date(), currentMoonPositionData.latitude, currentMoonPositionData.longitude);
+            }
+            window.addEventListener('resize', onSkyMapResize);
+        }
+
+        function makeTextSprite(message, parameters) { const fontface = parameters.fontface || 'Arial'; const fontsize = parameters.fontsize || 18; const borderThickness = parameters.borderThickness || 0; const backgroundColor = parameters.backgroundColor || { r:0, g:0, b:0, a:0.0 }; const textColor = parameters.textColor || { r:255, g:255, b:255, a:1.0 }; const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); context.font = "Bold " + fontsize + "px " + fontface; const metrics = context.measureText(message); const textWidth = metrics.width; canvas.width = textWidth + borderThickness * 2; canvas.height = fontsize * 1.4 + borderThickness * 2; context.font = "Bold " + fontsize + "px " + fontface; context.fillStyle = `rgba(${backgroundColor.r}, ${backgroundColor.g}, ${backgroundColor.b}, ${backgroundColor.a})`; context.strokeStyle = `rgba(${(parameters.borderColor || {r:0,g:0,b:0,a:1.0}).r}, ${(parameters.borderColor || {r:0,g:0,b:0,a:1.0}).g}, ${(parameters.borderColor || {r:0,g:0,b:0,a:1.0}).b}, ${(parameters.borderColor || {r:0,g:0,b:0,a:1.0}).a})`; context.lineWidth = borderThickness; context.fillStyle = `rgba(${textColor.r}, ${textColor.g}, ${textColor.b}, ${textColor.a})`; context.fillText(message, borderThickness, fontsize + borderThickness); const texture = new THREE.Texture(canvas); texture.needsUpdate = true; const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false }); const sprite = new THREE.Sprite(spriteMaterial); sprite.scale.set(5, 2.5, 1.0); return sprite; }
+        
+        function updateMoonPositionInSkyMap(altitudeRad, azimuthRadSC) { 
+            if (!moonMesh || !skyMapInitialized) return; 
+            const azimuthRadThreeJS = (azimuthRadSC + Math.PI) % (2 * Math.PI); 
+            const x = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * Math.sin(azimuthRadThreeJS); 
+            const y = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.sin(altitudeRad); 
+            const z = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * -Math.cos(azimuthRadThreeJS); 
+            moonMesh.position.set(x, y, z); 
+        }
+        function animateSkyMap() { 
+            if (!skyMapModal.classList.contains('visible')) { 
+                if(skyMapAnimationId) console.log("Sky map animation loop: Modal not visible, stopping.");
+                skyMapAnimationId = null; 
+                return; 
+            } 
+            skyMapAnimationId = requestAnimationFrame(animateSkyMap); 
+            if (skyControls) skyControls.update(); 
+            if (skyRenderer && skyScene && skyCamera) skyRenderer.render(skyScene, skyCamera); 
+        }
+        function onSkyMapResize() { if (!skyMapInitialized || !skyMapCanvasContainer) return; const newWidth = skyMapCanvasContainer.clientWidth; const newHeight = skyMapCanvasContainer.clientHeight; if (skyCamera && skyRenderer) { skyCamera.aspect = newWidth / newHeight; skyCamera.updateProjectionMatrix(); skyRenderer.setSize(newWidth, newHeight); } }
+
+        // --- Main Data Fetching and UI Update Functions ---
+        async function updateMoonInfo(isAutoRefresh = false) {
+            if (!isAutoRefresh) {
+                statusDiv.classList.remove('hidden'); contentArea.classList.add('hidden'); locationInfoDiv.classList.add('hidden');
+                const sections = contentArea.querySelectorAll('.data-section'); sections.forEach(section => section.style.opacity = '0');
+                statusDiv.querySelector('p').textContent = 'Fetching location...';
+            }
+            refreshButton.disabled = true; skyMapButton.disabled = true; notificationsButton.disabled = true;
+            if (refreshIconSvg) refreshIconSvg.classList.add('refreshing');
+            try {
+                const position = await new Promise((resolve, reject) => { navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }); });
+                const lat = position.coords.latitude; const lon = position.coords.longitude; const acc = position.coords.accuracy;
+                if (!isAutoRefresh) { statusDiv.querySelector('p').textContent = 'Calculating moon data...'; }
+                fetchDataWithLocation(lat, lon, `Your Location`, acc, isAutoRefresh);
+            } catch (error) {
+                console.error("Geolocation Error:", error);
+                if (!isAutoRefresh) {
+                    let errorMessage = "Could not get location. ";
+                    switch(error.code) { case error.PERMISSION_DENIED: errorMessage += "Permission denied."; break; case error.POSITION_UNAVAILABLE: errorMessage += "Location unavailable."; break; case error.TIMEOUT: errorMessage += "Request timed out."; break; default: errorMessage += "Unknown error."; break; }
+                    errorMessage += " Using default (New York).";
+                    statusDiv.innerHTML = `<p class="text-sm text-red-400 mt-2">${errorMessage}</p>`; statusDiv.classList.remove('hidden');
+                }
+                fetchDataWithLocation(defaultLocation.latitude, defaultLocation.longitude, 'Default Location (New York)', null, isAutoRefresh);
+            }
+            if (!isAutoRefresh) { statusDiv.classList.add('hidden'); contentArea.classList.remove('hidden'); }
+            refreshButton.disabled = false; skyMapButton.disabled = false; notificationsButton.disabled = false;
+            if (refreshIconSvg) refreshIconSvg.classList.remove('refreshing');
+        }
+        function fetchDataWithLocation(lat, lon, locationName, accuracy = null, isAutoRefresh = false) {
+            if (!isAutoRefresh) { latSpan.textContent = lat.toFixed(4); lonSpan.textContent = lon.toFixed(4); accSpan.textContent = accuracy ? `~${Math.round(accuracy)}m` : 'Default'; locationInfoDiv.classList.remove('hidden'); }
+            const now = new Date();
+            const moonIlluminationData = SunCalc.getMoonIllumination(now);
+            const moonTimesData = SunCalc.getMoonTimes(now, lat, lon);
+            const moonPositionDataRaw = SunCalc.getMoonPosition(now, lat, lon);
+            
+            currentMoonPositionData = { 
+                altitude: moonPositionDataRaw.altitude, 
+                azimuth: moonPositionDataRaw.azimuth, 
+                distance: moonPositionDataRaw.distance,
+                latitude: lat, 
+                longitude: lon
+            };
+
+            phaseNameSpan.textContent = getPhaseName(moonIlluminationData.phase);
+            const currentAnimationDuration = isAutoRefresh ? ANIMATION_DURATION / 2 : ANIMATION_DURATION;
+            animateCountUp(illuminationValueSpan, moonIlluminationData.fraction * 100, currentAnimationDuration, 1);
+            
+            const moonAge = moonIlluminationData.phase * LUNAR_CYCLE_DAYS;
+            animateCountUp(moonAgeValueSpan, moonAge, currentAnimationDuration, 1); 
+            updateMoonVisual(moonAge); 
+
+            if (skyMapInitialized) { 
+                updateMoonPositionInSkyMap(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                updateSunLightPosition(lat, lon, now);
+                updateSkyDomeAndStarVisibility(now, lat, lon); // Update sky dome based on sun position
+            }
+
+
+            let riseTime = formatTime(moonTimesData.rise); let setTime = formatTime(moonTimesData.set); let timesMsg = '';
+            if (moonTimesData.alwaysUp) { riseTime = 'Up All Day'; setTime = ' '; timesMsg = 'Moon is above horizon all day.'; }
+            else if (moonTimesData.alwaysDown) { riseTime = 'Down All Day'; setTime = ' '; timesMsg = 'Moon is below horizon all day.'; }
+            else if (isNaN(moonTimesData.rise?.getTime()) && !isNaN(moonTimesData.set?.getTime())) { riseTime = 'Rises Tomorrow'; }
+            else if (!isNaN(moonTimesData.rise?.getTime()) && isNaN(moonTimesData.set?.getTime())) { setTime = 'Sets Tomorrow'; }
+            else if (isNaN(moonTimesData.rise?.getTime()) && isNaN(moonTimesData.set?.getTime())) { riseTime = 'N/A'; setTime = 'N/A'; timesMsg = 'Rise/Set times unavailable.'; }
+            moonriseSpan.textContent = riseTime; moonsetSpan.textContent = setTime; moonTimesMessage.textContent = timesMsg;
+            const altitudeDeg = moonPositionDataRaw.altitude * 180 / Math.PI;
+            animateCountUp(altitudeValueSpan, altitudeDeg, currentAnimationDuration, 1);
+            let displayAzimuth = (moonPositionDataRaw.azimuth * 180 / Math.PI + 180) % 360;
+            animateCountUp(azimuthValueSpan, displayAzimuth, currentAnimationDuration, 1);
+            animateCountUp(distanceValueSpan, Math.round(moonPositionDataRaw.distance), currentAnimationDuration, 0, true);
+            zodiacSpan.textContent = getZodiacSign(moonPositionDataRaw.eclipticLon * 180 / Math.PI);
+            const upcoming = calculateUpcomingPhases(moonIlluminationData.phase, now); 
+            nextNewMoonSpan.textContent = formatDate(upcoming.newMoon); nextFirstQuarterSpan.textContent = formatDate(upcoming.firstQuarter);
+            nextFullMoonSpan.textContent = formatDate(upcoming.fullMoon); nextLastQuarterSpan.textContent = formatDate(upcoming.lastQuarter);
+        }
+
+        // --- Notification Scheduling & Handling ---
+        function checkScheduledNotifications() {
+            const now = new Date().getTime();
+            const scheduled = JSON.parse(localStorage.getItem('moonPhaseScheduledNotifications') || '[]');
+            const activePrefs = JSON.parse(localStorage.getItem('moonPhaseNotificationPrefs') || '{}');
+            let updatedScheduled = []; 
+
+            if (Notification.permission === "granted") {
+                scheduled.forEach(alertInfo => {
+                    if (now >= new Date(alertInfo.notifyDate).getTime()) {
+                        if (activePrefs[alertInfo.phaseKey]) {
+                             const phaseDisplayName = getPhaseKeyName(alertInfo.phaseKey);
+                             new Notification("Moon Phase Pro Alert!", {
+                                body: `${phaseDisplayName} is occurring now/soon!`,
+                                icon: MOON_APP_ICON_URL,
+                                tag: `moon-phase-${alertInfo.phaseKey}-${alertInfo.notifyDate}`
+                            });
+                            console.log(`Notification sent for ${phaseDisplayName} originally scheduled for ${alertInfo.notifyDate}`);
+                        } else {
+                             console.log(`Skipping notification for ${alertInfo.phaseKey} as it's no longer preferred.`);
+                        }
+                    } else {
+                        updatedScheduled.push(alertInfo);
+                    }
+                });
+                localStorage.setItem('moonPhaseScheduledNotifications', JSON.stringify(updatedScheduled));
+            }
+            if (notificationCheckTimer) clearTimeout(notificationCheckTimer);
+            if (updatedScheduled.length > 0 || Object.values(activePrefs).some(p => p)) {
+                 notificationCheckTimer = setTimeout(checkScheduledNotifications, NOTIFICATION_CHECK_INTERVAL_MS);
+            } else {
+                console.log("No active notification preferences or future scheduled alerts. Stopping notification checker.");
+            }
+        }
+
+
+        // --- Event Listeners ---
+        refreshButton.addEventListener('click', () => { if (!refreshButton.disabled) { updateMoonInfo(false); } });
+
+        skyMapButton.addEventListener('click', () => {
+            if (isInitializingSkyMap) {
+                console.log("Sky map initialization already in progress. Ignoring click.");
+                return; 
+            }
+
+            skyMapModal.classList.add('visible'); 
+            document.body.style.overflow = 'hidden';
+            
+            if (!skyMapInitialized) {
+                skyMapLoaderContainer.classList.remove('hidden');
+                setTimeout(() => { 
+                    initSkyMap(); 
+                }, 50); 
+            } else {
+                skyMapLoaderContainer.classList.add('hidden'); 
+                onSkyMapResize(); 
+                if (currentMoonPositionData && typeof currentMoonPositionData.latitude === 'number') { 
+                    updateMoonPositionInSkyMap(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                    updateSunLightPosition(currentMoonPositionData.latitude, currentMoonPositionData.longitude, new Date());
+                    updateSkyDomeAndStarVisibility(new Date(), currentMoonPositionData.latitude, currentMoonPositionData.longitude);
+                }
+                if (!skyMapAnimationId) { 
+                    console.log("Restarting sky map animation (button click - already initialized).");
+                    animateSkyMap();
+                }
+            }
+        });
+
+        skyMapModalCloseButton.addEventListener('click', () => {
+            skyMapModal.classList.remove('visible'); 
+            document.body.style.overflow = '';
+            isInitializingSkyMap = false; 
+            if (skyMapAnimationId) { 
+                cancelAnimationFrame(skyMapAnimationId); 
+                skyMapAnimationId = null; 
+                console.log("Sky map animation stopped on modal close.");
+            }
+        });
+        skyMapModal.addEventListener('click', (event) => { if (event.target === skyMapModal) { skyMapModalCloseButton.click(); } });
+
+        notificationsButton.addEventListener('click', () => {
+            notificationsModal.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        });
+        notificationsModalCloseButton.addEventListener('click', () => {
+            notificationsModal.classList.remove('visible');
+            document.body.style.overflow = '';
+        });
+        notificationsModal.addEventListener('click', (event) => { if (event.target === notificationsModal) { notificationsModalCloseButton.click(); } });
+
+        saveNotificationsButton.addEventListener('click', async () => {
+            const preferences = {
+                newMoon: document.getElementById('notify-new-moon').checked,
+                firstQuarter: document.getElementById('notify-first-quarter').checked,
+                fullMoon: document.getElementById('notify-full-moon').checked,
+                lastQuarter: document.getElementById('notify-last-quarter').checked,
+            };
+            localStorage.setItem('moonPhaseNotificationPrefs', JSON.stringify(preferences)); 
+
+            const anyPreferenceChecked = Object.values(preferences).some(value => value === true);
+            if (!anyPreferenceChecked) {
+                 showCustomMessage('No notification preferences selected to schedule.', 'info');
+                 localStorage.setItem('moonPhaseScheduledNotifications', JSON.stringify([])); 
+                 if (notificationCheckTimer) clearTimeout(notificationCheckTimer); 
+                 return;
+            }
+
+            if (!("Notification" in window)) { showCustomMessage("This browser does not support desktop notification.", 'error'); return; }
+
+            let permission = Notification.permission;
+            if (permission === "default") { permission = await Notification.requestPermission(); }
+
+            if (permission === "granted") {
+                const scheduledAlerts = [];
+                if (lastCalculatedUpcomingPhases) {
+                    Object.keys(preferences).forEach(phaseKey => {
+                        if (preferences[phaseKey] && lastCalculatedUpcomingPhases[phaseKey]) {
+                            scheduledAlerts.push({
+                                phaseKey: phaseKey, 
+                                notifyDate: lastCalculatedUpcomingPhases[phaseKey].toISOString(), 
+                                id: `alert-${phaseKey}-${new Date(lastCalculatedUpcomingPhases[phaseKey]).getTime()}`
+                            });
+                        }
+                    });
+                }
+                localStorage.setItem('moonPhaseScheduledNotifications', JSON.stringify(scheduledAlerts));
+                showCustomMessage("Notification preferences saved! Alerts scheduled (client-side).", 'success');
+                new Notification("Moon Phase Pro", { body: "Notification preferences updated.", icon: MOON_APP_ICON_URL, tag: "prefs-saved" });
+                
+                if (notificationCheckTimer) clearTimeout(notificationCheckTimer);
+                checkScheduledNotifications(); 
+
+                notificationsModalCloseButton.click();
+            } else if (permission === "denied") {
+                showCustomMessage("Notification permission denied. Please check browser settings.", 'error');
+                localStorage.setItem('moonPhaseScheduledNotifications', JSON.stringify([])); 
+                if (notificationCheckTimer) clearTimeout(notificationCheckTimer);
+            } else {
+                 showCustomMessage("Notification permission request dismissed.", 'info');
+            }
+        });
+
+        downloadCalendarButton.addEventListener('click', () => {
+            if (!lastCalculatedUpcomingPhases) {
+                showCustomMessage("Moon phase data not yet available. Please wait or refresh.", 'info');
+                return;
+            }
+
+            let icsContent = "BEGIN:VCALENDAR\n";
+            icsContent += "VERSION:2.0\n";
+            icsContent += "PRODID:-//Moon Phase Pro//NONSGML v1.0//EN\n";
+            icsContent += "CALSCALE:GREGORIAN\n";
+
+            const phaseFriendlyNames = {
+                newMoon: "New Moon",
+                firstQuarter: "First Quarter",
+                fullMoon: "Full Moon",
+                lastQuarter: "Last Quarter"
+            };
+
+            Object.entries(lastCalculatedUpcomingPhases).forEach(([phaseKey, dateObj]) => {
+                if (dateObj instanceof Date && !isNaN(dateObj)) {
+                    const year = dateObj.getUTCFullYear();
+                    const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0');
+                    const day = dateObj.getUTCDate().toString().padStart(2, '0');
+                    const dtstamp = new Date().toISOString().replace(/[-:.]/g, "").slice(0, 15) + "Z";
+                    const uid = `moonphasepro-${year}${month}${day}-${phaseKey}@moonphasepro.com`;
+
+                    icsContent += "BEGIN:VEVENT\n";
+                    icsContent += `UID:${uid}\n`;
+                    icsContent += `DTSTAMP:${dtstamp}\n`;
+                    icsContent += `DTSTART;VALUE=DATE:${year}${month}${day}\n`;
+                    const nextDay = new Date(dateObj);
+                    nextDay.setUTCDate(dateObj.getUTCDate() + 1);
+                    const nextDayYear = nextDay.getUTCFullYear();
+                    const nextDayMonth = (nextDay.getUTCMonth() + 1).toString().padStart(2, '0');
+                    const nextDayDay = nextDay.getUTCDate().toString().padStart(2, '0');
+                    icsContent += `DTEND;VALUE=DATE:${nextDayYear}${nextDayMonth}${nextDayDay}\n`;
+
+                    icsContent += `SUMMARY:${phaseFriendlyNames[phaseKey] || 'Moon Phase Event'}\n`;
+                    icsContent += `DESCRIPTION:Upcoming ${phaseFriendlyNames[phaseKey] || 'moon phase event'}. Tracked by Moon Phase Pro.\n`;
+                    icsContent += "END:VEVENT\n";
+                }
+            });
+
+            icsContent += "END:VCALENDAR\n";
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", "moon_phases_upcoming.ics");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            showCustomMessage("Calendar file (.ics) download initiated!", 'success');
+        });
+
+
+        // --- Initial Load & Auto-Refresh Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            createStarryBackground();
+            updateMoonInfo(false); 
+
+            const savedPrefsString = localStorage.getItem('moonPhaseNotificationPrefs');
+            if (savedPrefsString) {
+                try {
+                    const savedPrefs = JSON.parse(savedPrefsString);
+                    document.getElementById('notify-new-moon').checked = savedPrefs.newMoon || false;
+                    document.getElementById('notify-first-quarter').checked = savedPrefs.firstQuarter || false;
+                    document.getElementById('notify-full-moon').checked = savedPrefs.fullMoon || false;
+                    document.getElementById('notify-last-quarter').checked = savedPrefs.lastQuarter || false;
+                } catch (e) { console.error("Error parsing saved notification preferences:", e); }
+            }
+
+            if (Notification.permission === "granted" && localStorage.getItem('moonPhaseScheduledNotifications')) {
+                 if (notificationCheckTimer) clearTimeout(notificationCheckTimer);
+                 checkScheduledNotifications();
+            }
+
+
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            autoRefreshTimer = setInterval(() => { updateMoonInfo(true); }, AUTO_REFRESH_INTERVAL_MS);
+        });
+    </script>
+</body>
+</html>

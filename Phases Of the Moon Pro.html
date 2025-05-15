@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moon Phases Pro v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        /* Base styles & Font */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #000; /* Base black background */
+            color: #f5f5f7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            overflow-x: hidden; /* Prevent horizontal scroll from stars */
+            position: relative; /* Needed for z-indexing of starry background */
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        /* Starry Background Styling */
+        #starry-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind all other content */
+            overflow: hidden; /* Hide stars that drift off-screen */
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: starDrift 50s linear infinite, starTwinkle 3s infinite alternate;
+        }
+
+        .shooting-star {
+            position: absolute;
+            background: linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0));
+            border-radius: 50% / 10%; /* Elongated shape */
+            opacity: 0;
+            animation: shootingStarAnim 5s ease-in-out infinite;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
+        }
+
+        @keyframes starDrift {
+            from { transform: translateY(0px) translateX(0px); }
+            to { transform: translateY(-100px) translateX(20px); } /* Adjust drift distance/direction */
+        }
+
+        @keyframes starTwinkle {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        @keyframes shootingStarAnim {
+            0% { opacity: 0; transform: translateX(-200px) translateY(0px) scaleY(1); }
+            10% { opacity: 0.8; transform: translateX(calc(100vw + 100px)) translateY(calc(100vh * 0.3)) scaleY(0.5); }
+            10.1% { opacity: 0; transform: translateX(calc(100vw + 100px)) translateY(calc(100vh * 0.3)) scaleY(0.5); }
+            100% { opacity: 0; transform: translateX(calc(100vw + 100px)) translateY(calc(100vh * 0.3)) scaleY(0.5); }
+        }
+
+        /* Main container styling */
+        .main-container {
+            width: 100%;
+            max-width: 768px;
+            margin: auto;
+            padding: 1.5rem;
+            position: relative; /* Ensure it's above the starry background */
+            z-index: 1;
+        }
+
+        /* Loader Spinner (reused for modal) */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #0A84FF;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Moon Visualization Container */
+        .realistic-moon-container {
+            width: clamp(150px, 50vw, 250px);
+            height: clamp(150px, 50vw, 250px);
+            border-radius: 50%;
+            position: relative;
+            margin: 1rem auto 2rem auto;
+            overflow: hidden;
+            background-color: #2c2c2e;
+            box-shadow: 0 0 30px rgba(180, 180, 180, 0.15), inset 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .realistic-moon-image {
+            width: 100%; height: 100%; background-size: cover; background-position: center;
+            border-radius: 50%; position: absolute; top: 0; left: 0;
+            transition: background-image 0.3s ease-in-out;
+        }
+
+        /* Data Sections Styling */
+        .data-section {
+            background-color: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            animation: fadeInSection 0.6s ease-out forwards;
+        }
+        @keyframes fadeInSection { to { opacity: 1; } }
+        #primary-details { animation-delay: 0.1s; }
+        #secondary-details { animation-delay: 0.2s; }
+        #celestial-viewer-details { animation-delay: 0.3s; } /* New section */
+        #upcoming-phases { animation-delay: 0.4s; }
+
+
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+        .data-item { text-align: center; }
+        .data-label { font-size: 0.75rem; color: #8e8e93; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-value { font-size: 1rem; font-weight: 500; color: #f5f5f7; }
+        .data-value .unit { font-size: 0.875rem; color: #8e8e93; margin-left: 2px; }
+        .data-value span:not(.unit) { display: inline-block; }
+
+        /* Upcoming Phases List */
+        .phase-list-item { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .phase-list-item:last-child { border-bottom: none; }
+        .phase-icon { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-right: 0.75rem; box-shadow: inset 0 0 3px rgba(0,0,0,0.3); }
+        .phase-icon.new-moon { background-color: #333; }
+        .phase-icon.first-quarter { background: linear-gradient(to right, #333 50%, #ccc 50%); }
+        .phase-icon.full-moon { background-color: #ccc; }
+        .phase-icon.last-quarter { background: linear-gradient(to left, #333 50%, #ccc 50%); }
+        .phase-name { font-size: 0.9rem; color: #f5f5f7; flex-grow: 1; }
+        .phase-date { font-size: 0.85rem; color: #8e8e93; text-align: right; }
+
+        /* Refresh Icon Button */
+        .refresh-icon-button {
+            background-color: rgba(60, 60, 67, 0.7); backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);
+            color: #f5f5f7; border: 1px solid rgba(255, 255, 255, 0.1); width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease; margin: 2rem auto 0 auto;
+        }
+        .refresh-icon-button svg { width: 20px; height: 20px; transition: transform 0.5s ease; stroke-width: 1.5; }
+        .refresh-icon-button:hover { background-color: rgba(80, 80, 87, 0.8); }
+        .refresh-icon-button:active { transform: scale(0.95); }
+        .refresh-icon-button:disabled { background-color: rgba(44, 44, 46, 0.6); color: #8e8e93; cursor: not-allowed; transform: scale(1); }
+        .refresh-icon-button:disabled svg { opacity: 0.5; }
+        @keyframes spin-refresh { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .refresh-icon-button svg.refreshing { animation: spin-refresh 1s linear infinite; }
+
+        /* Sky Map Button */
+        #sky-map-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: rgba(177, 179, 182, 0.9); /* Apple blue { background-color: rgba(0, 122, 255, 0.85); }*/
+            color: white;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            border: none;
+            /* margin-top: 0.5rem; Spacing within its section */
+        }
+        #sky-map-button:hover { background-color: rgba(177, 179, 182, 0.9); } /*old { background-color: rgba(0, 100, 220, 0.9); }*/
+        #sky-map-button:active { transform: scale(0.98); }
+        #sky-map-button:disabled { background-color: rgba(142, 142, 147, 0.5); color: rgba(235, 235, 245, 0.6); cursor: not-allowed; }
+
+
+        /* Modal Styling (Apple Inspired) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Darker overlay for better contrast with modal */
+            backdrop-filter: blur(8px) saturate(150%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            /* Apple glassmorphism: soft, layered, elegant */
+            background: linear-gradient(135deg, rgba(44,44,46,0.92) 80%, rgba(60,60,67,0.85) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-radius: 22px;
+            border: 1.5px solid rgba(255,255,255,0.16);
+            box-shadow: 0 16px 48px 0 rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.10);
+            padding: 2.5rem 2rem 2.2rem 2rem;
+            width: 96%;
+            max-width: 620px;
+            position: relative;
+            transform: scale(0.92);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: rgba(255,255,255,0.10);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            font-size: 22px;
+            line-height: 38px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+            z-index: 10;
+        }
+        .modal-close-button:hover {
+            background: rgba(0,122,255,0.18);
+            color: #fff;
+        }
+        #sky-map-canvas-container {
+            width: 100%;
+            height: clamp(300px, 50vh, 450px); /* Responsive height */
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #111; /* Dark background for canvas */
+        }
+        #sky-map-canvas { display: block; } /* Remove extra space below canvas */
+
+        #sky-map-loader-container { /* For loader inside canvas area */
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 10;
+            border-radius: 8px; /* Match canvas container */
+        }
+         #sky-map-loader-container.hidden { display: none; }
+
+
+        /* Footer */
+        footer { font-size: 0.7rem; color: #8e8e93; margin-top: 2rem; text-align: center; }
+        footer a { color: #0A84FF; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        .action-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+        }
+        @media (min-width: 640px) {
+            .action-buttons-container {
+                flex-direction: row;
+            }
+        }
+        .action-button {
+            width: 100%;
+            min-width: 0;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.85rem 0;
+            transition: background 0.18s, box-shadow 0.18s;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7em;
+        }
+
+        /* Apple-style toggle switch (for modal) */
+        #customize-view-form .peer:checked ~ div {
+            background: linear-gradient(90deg, #2563eb 60%, #60a5fa 100%) !important;
+        }
+        #customize-view-form .peer ~ div > div {
+            transition: transform 0.22s cubic-bezier(.4,0,.2,1);
+        }
+        #customize-view-form .peer:checked ~ div > div {
+            transform: translateX(20px);
+            box-shadow: 0 2px 8px 0 rgba(37,99,235,0.18);
+        }
+        #customize-view-form .peer ~ div {
+            transition: background 0.22s cubic-bezier(.4,0,.2,1);
+        }
+        #customize-view-form .peer ~ div {
+            box-shadow: 0 1px 4px 0 rgba(0,0,0,0.10) inset;
+        }
+        /* Modal section row */
+        #customize-view-form .customize-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 0.5rem 0.85rem 0.5rem;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.02);
+            margin-bottom: 0.2rem;
+            transition: background 0.18s;
+        }
+        #customize-view-form .customize-row:hover {
+            background: rgba(0,122,255,0.07);
+        }
+        #customize-view-form .customize-label {
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+            font-size: 1.07rem;
+            font-weight: 500;
+            color: #e5e7eb;
+            letter-spacing: -0.01em;
+        }
+        #customize-view-form .customize-label svg {
+            opacity: 0.82;
+        }
+        #customize-view-form .customize-toggle {
+            margin-left: 1rem;
+        }
+        /* Modal title */
+        #customize-view-modal h3 {
+            font-size: 1.55rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #f3f4f6;
+            margin-bottom: 2.1rem;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        /* Modal subtitle */
+        #customize-view-modal .customize-sub {
+            color: #a5b4fc;
+            font-size: 0.98rem;
+            margin-bottom: 1.2rem;
+            text-align: center;
+            letter-spacing: 0.01em;
+        }
+        /* Responsive modal */
+        @media (max-width: 500px) {
+            .modal-content {
+                padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+                max-width: 98vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="starry-background"></div>
+
+    <div class="main-container">
+        <div id="status" class="text-center mb-6">
+            <div class="loader"></div>
+            <p class="text-sm text-gray-400 mt-2">Fetching location...</p>
+        </div>
+
+        <div id="location-info" class="text-center mb-6 text-xs text-gray-500 hidden">
+            Location: <span id="latitude"></span>°, <span id="longitude"></span>° (<span id="accuracy"></span>m accuracy)
+        </div>
+
+        <!-- Apple-inspired Customize View Button -->
+        <div class="w-full flex justify-end mb-2">
+            <button id="customize-view-btn"
+                class="rounded-full bg-[rgba(44,44,46,0.7)] backdrop-blur-lg border border-[rgba(255,255,255,0.18)] shadow-lg w-12 h-12 flex items-center justify-center transition-all duration-200 hover:bg-[rgba(60,60,67,0.85)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                title="Customize Data View"
+                style="box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1.5px 8px rgba(0,0,0,0.10);">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+                    <path d="M8 12h8M12 8v8" stroke="currentColor"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="content-area" class="hidden">
+            <div class="realistic-moon-container" data-section="moon-visual">
+                <div id="realistic-moon-image" class="realistic-moon-image"
+                     onerror="this.style.backgroundImage='url(https://placehold.co/250x250/2c2c2e/cccccc?text=Error)'; console.error('Failed to load initial moon image div.')">
+                </div>
+            </div>
+
+            <div id="primary-details" class="data-section" data-section="primary-details">
+                <h2 id="phase-name" class="text-xl font-semibold text-center mb-1">-</h2>
+                <p class="text-sm text-gray-400 text-center mb-4">Illumination: <span id="illumination-value">-</span>%</p>
+                <div class="data-grid">
+                    <div class="data-item"> <div class="data-label">Moonrise</div> <div id="moonrise" class="data-value">-</div> </div>
+                    <div class="data-item"> <div class="data-label">Moonset</div> <div id="moonset" class="data-value">-</div> </div>
+                    <div class="data-item"> <div class="data-label">Altitude</div> <div class="data-value"><span id="altitude-value">-</span><span class="unit">°</span></div> </div>
+                    <div class="data-item"> <div class="data-label">Azimuth</div> <div class="data-value"><span id="azimuth-value">-</span><span class="unit">°</span></div> </div>
+                </div>
+                <p id="moon-times-message" class="text-xs text-gray-500 text-center mt-3"></p>
+            </div>
+
+            <div id="secondary-details" class="data-section" data-section="secondary-details">
+                <div class="data-grid">
+                    <div class="data-item"> <div class="data-label">Distance</div> <div class="data-value"><span id="distance-value">-</span><span class="unit"> km</span></div> </div>
+                    <div class="data-item"> <div class="data-label">Age</div> <div class="data-value"><span id="moon-age-value">-</span><span class="unit"> days</span></div> </div>
+                    <div class="data-item"> <div class="data-label">Zodiac</div> <div id="zodiac" class="data-value">-</div> </div>
+                </div>
+            </div>
+
+            <div id="celestial-viewer-details" class="data-section" data-section="celestial-viewer">
+                <h3 class="text-base font-semibold mb-4 text-gray-200 tracking-wide text-center">Celestial Viewer & Tools</h3>
+                <div class="flex flex-col sm:flex-row gap-4 w-full">
+                    <!-- Sky Map Button: Apple-inspired, matches Set Notification style -->
+                    <button id="sky-map-button"
+                        class="flex-1 flex flex-col items-center justify-center px-0 py-5 rounded-2xl bg-gradient-to-br from-blue-600/80 to-blue-400/80 text-white font-semibold text-base shadow-lg hover:from-blue-700/90 hover:to-blue-500/90 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-150 border border-blue-400/30 backdrop-blur-md group"
+                        style="min-width:0;">
+                        <span class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-400/20 mb-2 group-hover:bg-blue-400/40 transition mx-auto">
+                            <!-- 3D Map Icon (Apple inspired) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" style="height: 3.75rem;" fill="none" viewBox="0 0 24 24">
+                                <rect x="3" y="7" width="5" height="10" rx="1.5" fill="#2563eb" stroke="#fff" stroke-width="1.2"/>
+                                <rect x="9.5" y="5" width="5" height="14" rx="1.5" fill="#60a5fa" stroke="#fff" stroke-width="1.2"/>
+                                <rect x="16" y="9" width="5" height="8" rx="1.5" fill="#3b82f6" stroke="#fff" stroke-width="1.2"/>
+                                <path d="M3 7l6.5-2 7 2 4.5 2" stroke="#fff" stroke-width="1.1" fill="none"/>
+                                <circle cx="12" cy="12" r="1.5" fill="#fff" stroke="#2563eb" stroke-width="1"/>
+                            </svg>
+                        </span>
+                        <span class="text-base font-semibold tracking-wide text-center w-full block">View Sky Map</span>
+                        <span class="text-xs text-blue-100 mt-1 opacity-80 block w-full text-center">3D Moon Position</span>
+                    </button>
+                    <!-- Notifications Button: modern glassy card style -->
+                    <button id="set-notifications-btn"
+                        class="flex-1 flex flex-col items-center justify-center px-0 py-5 rounded-2xl bg-gradient-to-br from-yellow-500/80 to-yellow-400/80 text-white font-semibold text-base shadow-lg hover:from-yellow-600/90 hover:to-yellow-500/90 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-150 border border-yellow-400/30 backdrop-blur-md group"
+                        style="min-width:0;">
+                        <span class="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-400/20 mb-2 group-hover:bg-yellow-400/40 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                                <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2z" fill="#fde68a"/>
+                                <path d="M18 16v-5c0-3.07-2.13-5.64-5-6.32V4a1 1 0 1 0-2 0v.68C8.13 5.86 6 8.43 6 11.5v5l-1.29 1.29A1 1 0 0 0 6 19h12a1 1 0 0 0 .71-1.71L18 16z"
+                                    fill="#fde68a" stroke="#fff" stroke-width="1.2"/>
+                                <circle cx="18" cy="7" r="1.2" fill="#fbbf24" stroke="#fff" stroke-width="1"/>
+                            </svg>
+                        </span>
+                        <span class="text-base font-semibold tracking-wide">Set Notifications</span>
+                        <span class="text-xs text-yellow-100 mt-1 opacity-80">Moon Phase Alerts</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="upcoming-phases" class="data-section" data-section="upcoming-phases">
+                <h3 class="text-base font-semibold mb-3 text-gray-300">Upcoming Phases <span class="text-xs text-gray-500">(Est.)</span></h3>
+                <ul class="phase-list">
+                    <li class="phase-list-item"> <span class="phase-icon new-moon"></span> <span class="phase-name">New Moon</span> <span id="next-new-moon" class="phase-date">-</span> </li>
+                    <li class="phase-list-item"> <span class="phase-icon first-quarter"></span> <span class="phase-name">First Quarter</span> <span id="next-first-quarter" class="phase-date">-</span> </li>
+                    <li class="phase-list-item"> <span class="phase-icon full-moon"></span> <span class="phase-name">Full Moon</span> <span id="next-full-moon" class="phase-date">-</span> </li>
+                    <li class="phase-list-item"> <span class="phase-icon last-quarter"></span> <span class="phase-name">Last Quarter</span> <span id="next-last-quarter" class="phase-date">-</span> </li>
+                </ul>
+            </div>
+
+            <!-- Redesigned Date Picker Section -->
+            <div class="flex justify-center mb-6" data-section="date-picker">
+                <div class="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-lg border border-[rgba(255,255,255,0.10)] bg-[rgba(28,28,30,0.85)] backdrop-blur-md">
+                    <span class="text-sm text-gray-300 font-medium flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                            <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                            <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                        </svg>
+                        Date
+                    </span>
+                    <input
+                        type="date"
+                        id="moon-date-picker"
+                        class="appearance-none rounded-xl px-4 py-2 bg-[rgba(44,44,46,0.92)] text-gray-100 border border-[rgba(255,255,255,0.13)] focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base font-medium shadow-inner w-[150px] hover:bg-[rgba(44,44,46,0.98)]"
+                    />
+                    <button
+                        id="moon-date-today-btn"
+                        class="px-4 py-2 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-400 transition hover:from-blue-700 hover:to-blue-500 active:scale-95"
+                        style="letter-spacing:0.01em;"
+                        title="Jump to Today"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                            <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                            <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                        </svg>
+                        Today
+                    </button>
+                </div>
+            </div>
+
+            <button id="refresh-button" class="refresh-icon-button" title="Refresh Data" disabled>
+                <svg id="refresh-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Apple-style Customize Data View Modal (glassmorphic, toggle switches, icons) -->
+    <div id="customize-view-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="customize-modal-close" class="modal-close-button" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" style="width: 2.3rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M6 18L18 6"/>
+                </svg>
+            </button>
+            <h3>
+                <span class="inline-block align-middle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-blue-400 mr-1 -mt-1 inline-block" style="height: 3.75rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+                        <path d="M8 12h8M12 8v8" stroke="currentColor"/>
+                    </svg>
+                </span>
+                Customize Data View
+            </h3>
+            <div class="customize-sub">Choose which sections to show. Your preferences are saved automatically.</div>
+            <form id="customize-view-form" class="flex flex-col gap-2">
+                <div class="customize-row">
+                    <span class="customize-label">
+                        <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /></svg>
+                        Moon Visual
+                    </span>
+                    <label class="inline-flex items-center cursor-pointer customize-toggle">
+                        <input type="checkbox" data-section="moon-visual" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-400/30 peer-checked:bg-blue-500/80 rounded-full relative transition-all duration-200 shadow-inner">
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-all duration-200"></div>
+                        </div>
+                    </label>
+                </div>
+                <div class="customize-row">
+                    <span class="customize-label">
+                        <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="8" rx="4"/></svg>
+                        Primary Details
+                    </span>
+                    <label class="inline-flex items-center cursor-pointer customize-toggle">
+                        <input type="checkbox" data-section="primary-details" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-400/30 peer-checked:bg-blue-500/80 rounded-full relative transition-all duration-200 shadow-inner">
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-all duration-200"></div>
+                        </div>
+                    </label>
+                </div>
+                <div class="customize-row">
+                    <span class="customize-label">
+                        <svg class="w-5 h-5 text-blue-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                        Secondary Details
+                    </span>
+                    <label class="inline-flex items-center cursor-pointer customize-toggle">
+                        <input type="checkbox" data-section="secondary-details" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-400/30 peer-checked:bg-blue-500/80 rounded-full relative transition-all duration-200 shadow-inner">
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-all duration-200"></div>
+                        </div>
+                    </label>
+                </div>
+                <div class="customize-row">
+                    <span class="customize-label">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="3"/></svg>
+                        Celestial Viewer
+                    </span>
+                    <label class="inline-flex items-center cursor-pointer customize-toggle">
+                        <input type="checkbox" data-section="celestial-viewer" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-400/30 peer-checked:bg-blue-500/80 rounded-full relative transition-all duration-200 shadow-inner">
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-all duration-200"></div>
+                        </div>
+                    </label>
+                </div>
+                <div class="customize-row">
+                    <span class="customize-label">
+                        <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18"/></svg>
+                        Upcoming Phases
+                    </span>
+                    <label class="inline-flex items-center cursor-pointer customize-toggle">
+                        <input type="checkbox" data-section="upcoming-phases" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-400/30 peer-checked:bg-blue-500/80 rounded-full relative transition-all duration-200 shadow-inner">
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-all duration-200"></div>
+                        </div>
+                    </label>
+                </div>
+                <div class="customize-row">
+                    <span class="customize-label">
+                        <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/></svg>
+                        Date Picker
+                    </span>
+                    <label class="inline-flex items-center cursor-pointer customize-toggle">
+                        <input type="checkbox" data-section="date-picker" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-400/30 peer-checked:bg-blue-500/80 rounded-full relative transition-all duration-200 shadow-inner">
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition-all duration-200"></div>
+                        </div>
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="sky-map-modal" class="modal-overlay">
+        <div class="modal-content" style="box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 1.5px 8px rgba(0,0,0,0.12); max-width: 960px; width: 96%;">
+            <button id="modal-close-button" class="modal-close-button">&times;</button>
+            <h3 class="text-lg font-semibold mb-3 text-center text-gray-100">Moon's Sky Position</h3>
+            <div id="sky-map-canvas-container">
+                <canvas id="sky-map-canvas"></canvas>
+                <div id="sky-map-loader-container"> <div class="loader"></div>
+                </div>
+            </div>
+            <!-- Apple-inspired info panel below the canvas -->
+            <div id="sky-map-info-panel" class="mt-4 flex flex-col md:flex-row items-center justify-center gap-4 bg-[rgba(28,28,30,0.7)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2 shadow-lg backdrop-blur-md transition-all duration-300">
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-400 uppercase tracking-wide">Altitude</span>
+                    <span id="sky-map-altitude" class="text-base font-semibold text-blue-200">–</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-400 uppercase tracking-wide">Azimuth</span>
+                    <span id="sky-map-azimuth" class="text-base font-semibold text-blue-200">–</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-400 uppercase tracking-wide">Direction</span>
+                    <span id="sky-map-direction" class="text-base font-semibold text-blue-200">–</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-400 uppercase tracking-wide">Distance</span>
+                    <span id="sky-map-distance" class="text-base font-semibold text-blue-200">–</span>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-3 text-center">Use mouse/touch to navigate (orbit). Scroll to zoom.</p>
+        </div>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div id="notification-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px; min-width:320px; padding: 2rem 1.5rem;">
+            <button id="notification-modal-close" class="modal-close-button">&times;</button>
+            <h3 class="text-lg font-semibold mb-4 text-center text-gray-100">Moon Phase Notifications</h3>
+            <form id="notification-settings-form" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
+                    <!-- Apple/Google inspired toggle row for each phase -->
+                    <!-- Example for Full Moon, repeat for others -->
+                    <div class="flex items-center justify-between bg-[rgba(28,28,30,0.85)] rounded-2xl px-4 py-3 shadow-md mb-1 border border-[rgba(255,255,255,0.08)]">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-400/20">
+                                <svg class="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /></svg>
+                            </span>
+                            <span class="font-medium text-gray-100">Full Moon</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- Modern toggle switch -->
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="fullMoon" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+                            </label>
+                            <!-- Modern pill ICS button -->
+                            <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-400 transition hover:from-blue-700 hover:to-blue-500 active:scale-95" data-phase="fullMoon" title="Download ICS for next Full Moon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                                    <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                                </svg>
+                                ICS
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-[rgba(28,28,30,0.85)] rounded-2xl px-4 py-3 shadow-md mb-1 border border-[rgba(255,255,255,0.08)]">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-400/20">
+                                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /></svg>
+                            </span>
+                            <span class="font-medium text-gray-100">New Moon</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="newMoon" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+                            </label>
+                            <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-gray-600 to-gray-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-gray-400 transition hover:from-gray-700 hover:to-gray-500 active:scale-95" data-phase="newMoon" title="Download ICS for next New Moon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                                    <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                                </svg>
+                                ICS
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-[rgba(28,28,30,0.85)] rounded-2xl px-4 py-3 shadow-md mb-1 border border-[rgba(255,255,255,0.08)]">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-200/20">
+                                <svg class="w-6 h-6 text-blue-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="8" rx="4"/></svg>
+                            </span>
+                            <span class="font-medium text-gray-100">First Quarter</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="firstQuarter" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+                            </label>
+                            <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-200 to-blue-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-200 transition hover:from-blue-300 hover:to-blue-500 active:scale-95" data-phase="firstQuarter" title="Download ICS for next First Quarter">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                                    <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                                </svg>
+                                ICS
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-[rgba(28,28,30,0.85)] rounded-2xl px-4 py-3 shadow-md mb-1 border border-[rgba(255,255,255,0.08)]">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-100/20">
+                                <svg class="w-6 h-6 text-blue-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                            </span>
+                            <span class="font-medium text-gray-100">Last Quarter</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="lastQuarter" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+                            </label>
+                            <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-100 transition hover:from-blue-200 hover:to-blue-400 active:scale-95" data-phase="lastQuarter" title="Download ICS for next Last Quarter">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                                    <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                                </svg>
+                                ICS
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-[rgba(28,28,30,0.85)] rounded-2xl px-4 py-3 shadow-md mb-1 border border-[rgba(255,255,255,0.08)]">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-yellow-400/20">
+                                <svg class="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8" ry="8"/></svg>
+                            </span>
+                            <span class="font-medium text-gray-100">Eclipse</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="eclipse" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-yellow-400/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+                            </label>
+                            <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:from-yellow-600 hover:to-yellow-500 active:scale-95" data-phase="eclipse" title="Download ICS for next Eclipse">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" fill="none"/>
+                                    <path d="M16 3v4M8 3v4" stroke="currentColor"/>
+                                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor"/>
+                                </svg>
+                                ICS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <label class="text-gray-300 text-sm font-medium" for="daysBefore">Remind me</label>
+                    <input type="number" min="0" max="7" name="daysBefore" id="daysBefore" class="rounded-xl px-3 py-2 w-20 bg-[rgba(44,44,46,0.92)] text-gray-100 border border-[rgba(255,255,255,0.13)] focus:outline-none focus:ring-2 focus:ring-blue-400 text-base font-medium shadow-inner" />
+                    <span class="text-gray-400 text-xs">days before</span>
+                </div>
+                <button type="submit" class="mt-3 w-full py-2 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 text-white font-semibold text-base shadow-lg hover:from-blue-700 hover:to-blue-500 transition border-0 focus:outline-none focus:ring-2 focus:ring-blue-400 active:scale-98">Save Settings</button>
+            </form>
+            <div id="notification-permission-message" class="text-xs text-center mt-3 text-yellow-300 hidden"></div>
+        </div>
+    </div>
+
+    <footer class="pb-4">
+        Designed by Marc Andréas Yao | Powered by <a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a> & <a href="https://threejs.org" target="_blank" rel="noopener noreferrer">Three.js</a> | Moon images source: <a href="https://svs.gsfc.nasa.gov/5415" target="_blank" rel="noopener noreferrer">NASA SVS</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const statusDiv = document.getElementById('status');
+        const locationInfoDiv = document.getElementById('location-info');
+        const contentArea = document.getElementById('content-area');
+        const latSpan = document.getElementById('latitude');
+        const lonSpan = document.getElementById('longitude');
+        const accSpan = document.getElementById('accuracy');
+        const phaseNameSpan = document.getElementById('phase-name');
+        const illuminationValueSpan = document.getElementById('illumination-value');
+        const moonriseSpan = document.getElementById('moonrise');
+        const moonsetSpan = document.getElementById('moonset');
+        const moonTimesMessage = document.getElementById('moon-times-message');
+        const altitudeValueSpan = document.getElementById('altitude-value');
+        const azimuthValueSpan = document.getElementById('azimuth-value');
+        const distanceValueSpan = document.getElementById('distance-value');
+        const zodiacSpan = document.getElementById('zodiac');
+        const moonAgeValueSpan = document.getElementById('moon-age-value');
+        const moonImageDiv = document.getElementById('realistic-moon-image');
+        const refreshButton = document.getElementById('refresh-button');
+        const refreshIconSvg = document.getElementById('refresh-icon-svg');
+        const nextNewMoonSpan = document.getElementById('next-new-moon');
+        const nextFirstQuarterSpan = document.getElementById('next-first-quarter');
+        const nextFullMoonSpan = document.getElementById('next-full-moon');
+        const nextLastQuarterSpan = document.getElementById('next-last-quarter');
+        const starryBackground = document.getElementById('starry-background');
+
+        // Sky Map Modal Elements
+        const skyMapButton = document.getElementById('sky-map-button');
+        const skyMapModal = document.getElementById('sky-map-modal');
+        const modalCloseButton = document.getElementById('modal-close-button');
+        const skyMapCanvas = document.getElementById('sky-map-canvas');
+        const skyMapCanvasContainer = document.getElementById('sky-map-canvas-container');
+        const skyMapLoaderContainer = document.getElementById('sky-map-loader-container');
+
+        // Sky Map Info Panel Elements
+        const skyMapAltitude = document.getElementById('sky-map-altitude');
+        const skyMapAzimuth = document.getElementById('sky-map-azimuth');
+        const skyMapDirection = document.getElementById('sky-map-direction');
+        const skyMapDistance = document.getElementById('sky-map-distance');
+
+        // Date Picker Elements
+        const moonDatePicker = document.getElementById('moon-date-picker');
+        const moonDateTodayBtn = document.getElementById('moon-date-today-btn');
+        let selectedDate = null; // Date object or null for today
+
+        // --- Default Location ---
+        const defaultLocation = { latitude: 40.7128, longitude: -74.0060 }; // New York
+
+        // --- Constants ---
+        const LUNAR_CYCLE_DAYS = 29.530588853;
+        const MOON_IMAGE_COUNT = 30;
+        const ANIMATION_DURATION = 1000;
+        const AUTO_REFRESH_INTERVAL_MS = 10 * 1000; // 10 seconds for more realtime updates
+        const NUM_STARS = 100;
+        const NUM_SHOOTING_STARS = 3;
+        const VISUAL_MOON_DISTANCE_IN_SKY_MAP = 50; // Arbitrary distance for moon in 3D scene
+
+        // --- State Variables ---
+        let autoRefreshTimer = null;
+        let currentMoonPositionData = null; // To store {altitude, azimuth, distance} for the sky map
+
+        // --- Moon Images Array ---
+        const moonPhaseImages = ['https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2803.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2824.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2852.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2876.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2924.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2900.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2970.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2975.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2997.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3023.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3043.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3068.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3094.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3118.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3164.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3188.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3213.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3238.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3262.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3287.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3311.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3359.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3384.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3408.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3432.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3454.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3461.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3464.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3487.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3498.jpg'];
+
+        // --- Three.js Scene Variables ---
+        let skyScene, skyCamera, skyRenderer, skyControls, moonMesh, starsPoints, horizonPlane;
+        let skyMapInitialized = false;
+        let skyMapAnimationId = null;
+        let moonLight = null; // reference to the main directional light for the sun
+
+        // --- Helper Functions ---
+        function formatTime(date) { if (!date || isNaN(date.getTime())) return '–'; return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+        function formatDate(date) { if (!date || isNaN(date.getTime())) return '–'; return date.toLocaleDateString([], { month: 'short', day: 'numeric' }); }
+        function getPhaseName(phaseValue) { if (phaseValue < 0.02 || phaseValue > 0.98) return 'New Moon'; if (phaseValue < 0.23) return 'Waxing Crescent'; if (phaseValue < 0.27) return 'First Quarter'; if (phaseValue < 0.48) return 'Waxing Gibbous'; if (phaseValue < 0.52) return 'Full Moon'; if (phaseValue < 0.73) return 'Waning Gibbous'; if (phaseValue < 0.77) return 'Last Quarter'; return 'Waning Crescent'; }
+        function getZodiacSign(longitude) { const normalizedLon = (longitude % 360 + 360) % 360; const signs = [ { name: 'Aries', start: 0 }, { name: 'Taurus', start: 30 }, { name: 'Gemini', start: 60 }, { name: 'Cancer', start: 90 }, { name: 'Leo', start: 120 }, { name: 'Virgo', start: 150 }, { name: 'Libra', start: 180 }, { name: 'Scorpio', start: 210 }, { name: 'Sagittarius', start: 240 }, { name: 'Capricorn', start: 270 }, { name: 'Aquarius', start: 300 }, { name: 'Pisces', start: 330 } ]; for (let i = signs.length - 1; i >= 0; i--) { if (normalizedLon >= signs[i].start) return signs[i].name; } return 'Aries'; }
+        function animateCountUp(element, endValue, duration = 1000, decimals = 0, isLocaleString = false) { if (!element) return; const startValue = parseFloat(element.textContent.replace(/,/g, '')) || 0; const range = endValue - startValue; let startTime = null; if (Math.abs(range) < 0.01 && decimals > 0) { element.textContent = isLocaleString ? Math.round(endValue).toLocaleString() : endValue.toFixed(decimals); return; } if (range === 0 && decimals === 0) { element.textContent = isLocaleString ? Math.round(endValue).toLocaleString() : endValue.toFixed(decimals); return; } function step(timestamp) { if (!startTime) startTime = timestamp; const progress = Math.min((timestamp - startTime) / duration, 1); let currentValue = startValue + range * progress; if (isLocaleString) { element.textContent = Math.round(currentValue).toLocaleString(); } else { element.textContent = currentValue.toFixed(decimals); } if (progress < 1) { requestAnimationFrame(step); } else { if (isLocaleString) { element.textContent = Math.round(endValue).toLocaleString(); } else { element.textContent = endValue.toFixed(decimals); } } } requestAnimationFrame(step); }
+        function updateMoonVisual(moonAgeDays) { if (!moonImageDiv) return; let imageIndex = Math.round(moonAgeDays); imageIndex = Math.max(0, Math.min(MOON_IMAGE_COUNT - 1, imageIndex)); const imageUrl = moonPhaseImages[imageIndex]; if (imageUrl) { const img = new Image(); img.onload = () => { moonImageDiv.style.backgroundImage = `url('${imageUrl}')`; }; img.onerror = () => { console.error(`Failed to load image for index ${imageIndex}: ${imageUrl}`); moonImageDiv.style.backgroundImage = `url('https://placehold.co/250x250/2c2c2e/cccccc?text=Load+Error')`; }; img.src = imageUrl; } else { moonImageDiv.style.backgroundImage = `url('https://placehold.co/250x250/ff0000/ffffff?text=Missing+URL')`; } }
+        function calculateUpcomingPhases(currentPhaseValue, currentDate) { const targetPhases = { newMoon: 0, firstQuarter: 0.25, fullMoon: 0.5, lastQuarter: 0.75 }; const results = {}; const currentTimestamp = currentDate.getTime(); for (const [name, targetPhase] of Object.entries(targetPhases)) { let phaseDifference = targetPhase - currentPhaseValue; if (phaseDifference < -0.01) { phaseDifference += 1; } const daysUntilPhase = phaseDifference * LUNAR_CYCLE_DAYS; const phaseTimestamp = currentTimestamp + daysUntilPhase * 24 * 60 * 60 * 1000; results[name] = new Date(phaseTimestamp); } return results; }
+        function createStarryBackground() { if (!starryBackground) return; starryBackground.innerHTML = ''; for (let i = 0; i < NUM_STARS; i++) { const star = document.createElement('div'); star.classList.add('star'); const size = Math.random() * 2 + 0.5; star.style.width = `${size}px`; star.style.height = `${size}px`; star.style.top = `${Math.random() * 100}%`; star.style.left = `${Math.random() * 100}%`; star.style.animationDelay = `${Math.random() * 50}s, ${Math.random() * 3}s`; star.style.animationDuration = `${Math.random() * 30 + 40}s, ${Math.random() * 2 + 2}s`; starryBackground.appendChild(star); } for (let i = 0; i < NUM_SHOOTING_STARS; i++) { const shootingStar = document.createElement('div'); shootingStar.classList.add('shooting-star'); const height = Math.random() * 2 + 1; shootingStar.style.height = `${height}px`; shootingStar.style.width = `${height * (Math.random() * 15 + 10)}px`; shootingStar.style.top = `${Math.random() * 70}%`; shootingStar.style.left = `-${Math.random() * 20 + 20}%`; shootingStar.style.animationDelay = `${Math.random() * 10 + i * 3}s`; shootingStar.style.animationDuration = `${Math.random() * 3 + 3}s`; starryBackground.appendChild(shootingStar); } }
+
+        // Helper: Convert azimuth (deg) to compass direction
+        function azimuthToDirection(az) {
+            const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+            const ix = Math.round(((az % 360) / 45));
+            return dirs[ix];
+        }
+
+        // Animate moon marker pop-in
+        function animateMoonPopIn() {
+            if (!moonMesh) return;
+            moonMesh.scale.set(0.1, 0.1, 0.1);
+            let t = 0;
+            function popStep() {
+                t += 0.08;
+                const s = Math.min(1, 0.1 + 0.9 * (1 - Math.exp(-4 * t)));
+                moonMesh.scale.set(s, s, s);
+                if (s < 1) requestAnimationFrame(popStep);
+            }
+            requestAnimationFrame(popStep);
+        }
+
+        // --- NASA Dial-A-Moon API Helper ---
+        async function fetchNasaDialAMoonImageUrl(date) {
+            const pad = n => n.toString().padStart(2, "0");
+            const yyyy = date.getUTCFullYear();
+            const mm = pad(date.getUTCMonth() + 1);
+            const dd = pad(date.getUTCDate());
+            const hh = pad(date.getUTCHours());
+            const min = pad(date.getUTCMinutes());
+            const apiUrl = `https://svs.gsfc.nasa.gov/api/dialamoon/date/${yyyy}-${mm}-${dd}/${hh}:${min}`;
+            try {
+                const resp = await fetch(apiUrl);
+                if (!resp.ok) throw new Error("NASA Dial-A-Moon API error");
+                const data = await resp.json();
+                if (Array.isArray(data.results) && data.results.length > 0 && data.results[0].image) {
+                    return data.results[0].image;
+                }
+            } catch (e) {
+                console.warn("Could not fetch NASA Dial-A-Moon image:", e);
+            }
+            return null;
+        }
+
+        // Improved moon visual update with local preloading and seamless transition
+        async function updateMoonVisualWithNasa(date) {
+            if (!moonImageDiv) return;
+            // Save current background image (if any)
+            const prevBg = moonImageDiv.style.backgroundImage;
+            let loadingTimeout = null;
+            let imageSet = false;
+
+            // Preload new image
+            const url = await fetchNasaDialAMoonImageUrl(date);
+            if (url) {
+                const img = new window.Image();
+                img.onload = () => {
+                    imageSet = true;
+                    moonImageDiv.style.backgroundImage = `url('${url}')`;
+                };
+                img.onerror = () => {
+                    imageSet = true;
+                    // fallback to phase image
+                    const now = date || new Date();
+                    const moonIllumination = SunCalc.getMoonIllumination(now);
+                    const moonAge = moonIllumination.phase * LUNAR_CYCLE_DAYS;
+                    updateMoonVisual(moonAge);
+                };
+                img.src = url;
+
+                // Only show loading placeholder if not loaded after 120ms
+                loadingTimeout = setTimeout(() => {
+                    if (!imageSet) {
+                        moonImageDiv.style.backgroundImage = "url('https://placehold.co/250x250/222/fff?text=Loading...')";
+                    }
+                }, 120);
+            } else {
+                // fallback to phase image
+                const now = date || new Date();
+                const moonIllumination = SunCalc.getMoonIllumination(now);
+                const moonAge = moonIllumination.phase * LUNAR_CYCLE_DAYS;
+                updateMoonVisual(moonAge);
+            }
+        }
+
+        // --- Sky Map Functions ---
+        function initSkyMap() {
+            if (skyMapInitialized) {
+                onSkyMapResize();
+                if (currentMoonPositionData) {
+                    updateSkyMapMoonPosition(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                    updateMoonMaterialForPhase(currentMoonPositionData.phase);
+                }
+                if (!skyMapAnimationId) animateSkyMap();
+                // Always hide loader if already initialized
+                skyMapLoaderContainer.classList.add('hidden');
+                return;
+            }
+            skyMapLoaderContainer.classList.remove('hidden');
+
+            let loaderTimeout = setTimeout(() => {
+                skyMapLoaderContainer.classList.add('hidden');
+            }, 3500); // Fallback: hide loader after 3.5s
+
+            try {
+                skyScene = new THREE.Scene();
+
+                // Add a dark sky background (almost black, subtle blue gradient)
+                const skyGeo = new THREE.SphereGeometry(500, 32, 32);
+                const skyMat = new THREE.MeshBasicMaterial({
+                    side: THREE.BackSide,
+                    map: createDarkSkyGradientTexture()
+                });
+                const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+                skyScene.add(skyMesh);
+
+                // --- Camera: place at center of ground, at human eye height (~1.7m), looking forward ---
+                const aspect = skyMapCanvasContainer.clientWidth / skyMapCanvasContainer.clientHeight;
+                skyCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
+                skyCamera.position.set(0, 1.7, 0); // Center of ground, 1.7m up
+                skyCamera.lookAt(0, 1.7, -10); // Look slightly forward (negative z)
+
+                skyRenderer = new THREE.WebGLRenderer({ canvas: skyMapCanvas, antialias: true, alpha: true });
+                skyRenderer.setSize(skyMapCanvasContainer.clientWidth, skyMapCanvasContainer.clientHeight);
+                skyRenderer.setPixelRatio(window.devicePixelRatio);
+
+                // Lighting: slightly brighter ambient and moonlight for better ground visibility
+                const ambientLight = new THREE.AmbientLight(0x222233, 1.1);
+                skyScene.add(ambientLight);
+
+                // --- Sunlight as DirectionalLight, will be updated in real-time ---
+                moonLight = new THREE.DirectionalLight(0xbfdfff, 0.7);
+                moonLight.position.set(0, 50, 80); // Initial, will be updated
+                skyScene.add(moonLight);
+
+                skyControls = new THREE.OrbitControls(skyCamera, skyRenderer.domElement);
+                skyControls.enableDamping = true;
+                skyControls.dampingFactor = 0.05;
+                skyControls.screenSpacePanning = false;
+                skyControls.minDistance = 2;
+                skyControls.maxDistance = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 2;
+                skyControls.target.set(0, 1.7, -10); // Match lookAt
+                skyControls.update();
+
+                // --- Realistic Ground Field (Grass Texture) ---
+                // Use a seamless grass texture (public domain)
+                const grassTextureUrl = "https://cdn.jsdelivr.net/gh/andreinitescu/public-assets@main/grass-seamless-1024.jpg";
+                const grassBumpUrl = "https://cdn.jsdelivr.net/gh/andreinitescu/public-assets@main/grass-bump-1024.jpg";
+                const horizonRadius = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5;
+                const horizonGeometry = new THREE.CircleGeometry(horizonRadius, 64);
+
+                // Load textures synchronously for best appearance
+                const texLoader = new THREE.TextureLoader();
+                const baseTexture = texLoader.load("lroc_color_poles_1k.jpg");
+                baseTexture.wrapS = baseTexture.wrapT = THREE.RepeatWrapping;
+                baseTexture.repeat.set(8, 8);
+
+                const overlayTexture = texLoader.load("ldem_3_8bit.jpg");
+                overlayTexture.wrapS = overlayTexture.wrapT = THREE.RepeatWrapping;
+                overlayTexture.repeat.set(8, 8);
+
+                // Custom shader material to blend the two textures
+                const horizonMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        baseMap: { value: baseTexture },
+                        overlayMap: { value: overlayTexture },
+                        overlayAlpha: { value: 0.5 }
+                    },
+                    vertexShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            // Make the ground a solid gray color
+                            gl_FragColor = vec4(0.65, 0.65, 0.65, 0.9); // light gray, 0.9 opacity
+                        }
+                    `,
+                    transparent: true,
+                    side: THREE.DoubleSide
+                });
+                horizonPlane = new THREE.Mesh(horizonGeometry, horizonMaterial);
+                horizonPlane.rotation.x = -Math.PI / 2;
+                horizonPlane.position.y = 0;
+
+                // Add N S E W labels
+                addCompassLabels(horizonRadius);
+
+                // Add a subtle ground shadow
+                const shadowGeo = new THREE.CircleGeometry(horizonRadius * 0.98, 64);
+                const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.18, transparent: true });
+                const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+                shadowMesh.rotation.x = -Math.PI / 2;
+                shadowMesh.position.y = 0.01;
+                skyScene.add(shadowMesh);
+
+                // Stars
+                const starVertices = [];
+                for (let i = 0; i < 2000; i++) {
+                    const x = THREE.MathUtils.randFloatSpread(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 4);
+                    const y = THREE.MathUtils.randFloatSpread(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 4);
+                    const z = THREE.MathUtils.randFloatSpread(VISUAL_MOON_DISTANCE_IN_SKY_MAP * 4);
+                    if (new THREE.Vector3(x, y, z).length() < horizonRadius * 1.1) continue;
+                    starVertices.push(x, y, z);
+                }
+                const starsGeometry = new THREE.BufferGeometry();
+                starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+                const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.8 });
+                starsPoints = new THREE.Points(starsGeometry, starsMaterial);
+                skyScene.add(starsPoints);
+
+                // --- Moon Mesh with NASA Texture and Displacement ---
+                const moonTextureURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/lroc_color_poles_1k.jpg";
+                const moonDisplacementURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/ldem_3_8bit.jpg";
+                const moonRadius = 2;
+                const moonSegments = 64;
+                const moonGeometry = new THREE.SphereGeometry(moonRadius, moonSegments, moonSegments);
+                const moonMaterial = new THREE.MeshStandardMaterial({
+                    roughness: 0.9,
+                    metalness: 0.1,
+                    color: 0xffffff
+                });
+                moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+                skyScene.add(moonMesh);
+
+                const textureLoader = new THREE.TextureLoader();
+                const colorMap = textureLoader.load(
+                    moonTextureURL,
+                    () => { // onLoad
+                        moonMaterial.map = colorMap;
+                        moonMaterial.needsUpdate = true;
+                        console.log("Moon color texture loaded.");
+                    },
+                    undefined, // onProgress (optional)
+                    (err) => { // onError
+                        console.error('Error loading moon color texture:', err);
+                        // Fallback or error indication for texture could be added here
+                    }
+                );
+
+                const displacementMap = textureLoader.load(
+                    moonDisplacementURL,
+                    () => { // onLoad
+                        moonMaterial.displacementMap = displacementMap;
+                        moonMaterial.displacementScale = 0.1; // Adjust for desired effect
+                        moonMaterial.needsUpdate = true;
+                        console.log("Moon displacement texture loaded.");
+                    },
+                    undefined, // onProgress
+                    (err) => { // onError
+                        console.error('Error loading moon displacement texture:', err);
+                    }
+                );
+
+                skyMapInitialized = true;
+            } catch (error) {
+                console.error("Error initializing Sky Map:", error);
+                skyMapLoaderContainer.innerHTML = `<p class="text-red-400 text-sm">Error loading 3D view.</p>`;
+                clearTimeout(loaderTimeout);
+                return;
+            }
+
+            // Hide loader after textures load or after fallback timeout
+            const hideLoader = () => {
+                skyMapLoaderContainer.classList.add('hidden');
+                clearTimeout(loaderTimeout);
+            };
+
+            // If moon texture loading is triggered, hook into its loader
+            if (typeof updateMoonMaterialForPhase === "function" && currentMoonPositionData && typeof currentMoonPositionData.phase === "number") {
+                // Patch updateMoonMaterialForPhase to hide loader after texture loads
+                const origUpdate = updateMoonMaterialForPhase;
+                updateMoonMaterialForPhase = function(phaseValue) {
+                    if (!moonMesh) { hideLoader(); return; }
+                    const phaseIdx = Math.round((phaseValue || 0) * (moonPhaseImages.length - 1));
+                    const phaseImgUrl = moonPhaseImages[phaseIdx];
+                    const texLoader = new THREE.TextureLoader();
+                    texLoader.load(phaseImgUrl, (moonTexture) => {
+                        texLoader.load("https://www.solarsystemscope.com/textures/download/2k_moon.jpg", (moonBump) => {
+                            moonMesh.material = new THREE.MeshPhysicalMaterial({
+                                map: moonTexture,
+                                bumpMap: moonBump,
+                                bumpScale: 0.45,
+                                color: 0xffffff,
+                                roughness: 0.22,
+                                metalness: 0.08,
+                                clearcoat: 0.8,
+                                clearcoatRoughness: 0.13,
+                                reflectivity: 0.22,
+                                transmission: 0.0,
+                                emissive: 0xffffff,
+                                emissiveIntensity: 0.22,
+                                sheen: 1,
+                                sheenColor: new THREE.Color(0xeaf6ff),
+                                sheenRoughness: 0.18,
+                                sheenColorIntensity: 0.7
+                            });
+                            moonMesh.material.needsUpdate = true;
+                            hideLoader();
+                        }, hideLoader, hideLoader);
+                    }, hideLoader, hideLoader);
+                };
+                updateMoonMaterialForPhase(currentMoonPositionData.phase);
+            } else {
+                hideLoader();
+            }
+
+            if (!skyMapAnimationId) {
+                animateSkyMap();
+            }
+            if (currentMoonPositionData) {
+                updateSkyMapMoonPosition(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                // updateMoonMaterialForPhase(currentMoonPositionData.phase); // Already called above
+            }
+            window.addEventListener('resize', onSkyMapResize);
+        }
+
+        // --- Add compass labels (N S E W) on the ground ---
+        function addCompassLabels(radius) {
+            const labelData = [
+                { text: 'N', angle: 0 },
+                { text: 'E', angle: Math.PI / 2 },
+                { text: 'S', angle: Math.PI },
+                { text: 'W', angle: 3 * Math.PI / 2 }
+            ];
+            labelData.forEach(label => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.font = "bold 64px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#fff";
+                ctx.shadowColor = "#000";
+                ctx.shadowBlur = 8;
+                ctx.globalAlpha = 0.85;
+                ctx.fillText(label.text, 64, 64);
+                const texture = new THREE.CanvasTexture(canvas);
+                const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+                const sprite = new THREE.Sprite(mat);
+                const labelDist = radius * 0.93;
+                sprite.position.set(
+                    Math.sin(label.angle) * labelDist,
+                    0.05,
+                    -Math.cos(label.angle) * labelDist
+                );
+                sprite.scale.set(5, 5, 1);
+                skyScene.add(sprite);
+            });
+        }
+
+        // --- Create a dark sky gradient texture for the background ---
+        function createDarkSkyGradientTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, 256);
+            grad.addColorStop(0, "#0a1120"); // top: very dark blue
+            grad.addColorStop(0.5, "#1a2233"); // mid: dark blue
+            grad.addColorStop(1, "#05070d"); // bottom: almost black
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 2, 256);
+            const texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            texture.minFilter = THREE.LinearFilter;
+            return texture;
+        }
+
+        function updateSkyMapMoonPosition(altitudeRad, azimuthRadSC) {
+            const azimuthRadThreeJS = (azimuthRadSC + Math.PI) % (2 * Math.PI);
+            const x = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * Math.sin(azimuthRadThreeJS);
+            const y = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.sin(altitudeRad);
+            const z = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * -Math.cos(azimuthRadThreeJS);
+            moonMesh.position.set(x, y, z);
+            animateMoonPopIn();
+            if (typeof currentMoonPositionData === "object" && typeof currentMoonPositionData.phase === "number") {
+                updateMoonMaterialForPhase(currentMoonPositionData.phase);
+            }
+            updateSkyMapInfoPanel();
+            if (skyRenderer && skyScene && skyCamera && skyMapModal.classList.contains('visible')) {
+                skyRenderer.render(skyScene, skyCamera);
+            }
+        }
+
+        function updateSkyMapInfoPanel() {
+            if (!currentMoonPositionData) return;
+            const altDeg = (currentMoonPositionData.altitude * 180 / Math.PI);
+            let azDeg = (currentMoonPositionData.azimuth * 180 / Math.PI + 180) % 360;
+            skyMapAltitude.textContent = altDeg.toFixed(1) + "°";
+            skyMapAzimuth.textContent = azDeg.toFixed(1) + "°";
+            skyMapDirection.textContent = azimuthToDirection(azDeg);
+            skyMapDistance.textContent = Math.round(currentMoonPositionData.distance).toLocaleString() + " km";
+        }
+
+        function updateSkyMapWithCurrentData() {
+            if (skyMapInitialized && currentMoonPositionData) {
+                updateSkyMapMoonPosition(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
+                updateSkyMapInfoPanel();
+            }
+        }
+
+        // --- Update Sun (Directional Light) Position based on real sun position ---
+        function updateSunLightForScene() {
+            if (!moonLight || !skyCamera) return;
+            // Use the user's ground position (camera's x,z) and current time
+            // For simplicity, use the last known lat/lon or default
+            let lat = defaultLocation.latitude, lon = defaultLocation.longitude;
+            if (typeof latSpan !== "undefined" && latSpan.textContent && !isNaN(Number(latSpan.textContent))) {
+                lat = Number(latSpan.textContent);
+            }
+            if (typeof lonSpan !== "undefined" && lonSpan.textContent && !isNaN(Number(lonSpan.textContent))) {
+                lon = Number(lonSpan.textContent);
+            }
+            const now = new Date();
+            const sunPos = SunCalc.getPosition(now, lat, lon);
+            // Convert sun's azimuth/altitude to 3D coordinates (same as moon)
+            const sunAz = sunPos.azimuth; // radians, from south to west
+            const sunAlt = sunPos.altitude; // radians
+            const sunDist = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 2; // Place sun far away
+            // SunCalc azimuth: 0=south, +west, -east. Three.js: 0=z-, x right, y up
+            // We'll rotate so that azimuth=0 is z-, positive is x+
+            const azimuthRadThreeJS = (sunAz + Math.PI) % (2 * Math.PI);
+            const x = sunDist * Math.cos(sunAlt) * Math.sin(azimuthRadThreeJS);
+            const y = sunDist * Math.sin(sunAlt);
+            const z = sunDist * Math.cos(sunAlt) * -Math.cos(azimuthRadThreeJS);
+            moonLight.position.set(x, y, z);
+            moonLight.target.position.set(0, 1.7, -10); // Always point to ground center
+            skyScene.add(moonLight.target);
+        }
+
+        function animateSkyMap() {
+            if (!skyMapModal.classList.contains('visible')) {
+                skyMapAnimationId = null;
+                return;
+            }
+            // --- Update sunlight direction every frame for real-time effect ---
+            updateSunLightForScene();
+            skyMapAnimationId = requestAnimationFrame(animateSkyMap);
+            if (skyControls) skyControls.update();
+            if (skyRenderer && skyScene && skyCamera) skyRenderer.render(skyScene, skyCamera);
+        }
+
+        function onSkyMapResize() {
+            if (!skyMapInitialized || !skyMapCanvasContainer) return;
+            const newWidth = skyMapCanvasContainer.clientWidth;
+            const newHeight = skyMapCanvasContainer.clientHeight;
+
+            if (skyCamera && skyRenderer) {
+                skyCamera.aspect = newWidth / newHeight;
+                skyCamera.updateProjectionMatrix();
+                skyRenderer.setSize(newWidth, newHeight);
+            }
+        }
+
+        async function updateMoonInfo(isAutoRefresh = false, customDate = null) {
+            if (!isAutoRefresh) {
+                statusDiv.classList.remove('hidden');
+                contentArea.classList.add('hidden');
+                locationInfoDiv.classList.add('hidden');
+                const sections = contentArea.querySelectorAll('.data-section');
+                sections.forEach(section => section.style.opacity = '0');
+                statusDiv.querySelector('p').textContent = 'Fetching location...';
+            }
+            refreshButton.disabled = true;
+            skyMapButton.disabled = true;
+            if (refreshIconSvg) refreshIconSvg.classList.add('refreshing');
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: false, timeout: 10000, maximumAge: 300000
+                    });
+                });
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const acc = position.coords.accuracy;
+                if (!isAutoRefresh) { statusDiv.querySelector('p').textContent = 'Calculating moon data...'; }
+                await fetchDataWithLocation(lat, lon, `Your Location`, acc, isAutoRefresh, customDate);
+            } catch (error) {
+                console.error("Geolocation Error:", error);
+                if (!isAutoRefresh) {
+                    let errorMessage = "Could not get location. ";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED: errorMessage += "Permission denied."; break;
+                        case error.POSITION_UNAVAILABLE: errorMessage += "Location unavailable."; break;
+                        case error.TIMEOUT: errorMessage += "Request timed out."; break;
+                        default: errorMessage += "Unknown error."; break;
+                    }
+                    errorMessage += " Using default (New York).";
+                    statusDiv.innerHTML = `<p class="text-sm text-red-400 mt-2">${errorMessage}</p>`;
+                    statusDiv.classList.remove('hidden');
+                }
+                await fetchDataWithLocation(defaultLocation.latitude, defaultLocation.longitude, 'Default Location (New York)', null, isAutoRefresh, customDate);
+            }
+
+            if (!isAutoRefresh) {
+                statusDiv.classList.add('hidden');
+                contentArea.classList.remove('hidden');
+            }
+            refreshButton.disabled = false;
+            skyMapButton.disabled = false;
+            if (refreshIconSvg) refreshIconSvg.classList.remove('refreshing');
+
+            if (skyMapModal.classList.contains('visible')) {
+                updateSkyMapWithCurrentData();
+            }
+        }
+
+        async function fetchDataWithLocation(lat, lon, locationName, accuracy = null, isAutoRefresh = false, customDate = null) {
+            if (!isAutoRefresh) {
+                latSpan.textContent = lat.toFixed(4);
+                lonSpan.textContent = lon.toFixed(4);
+                accSpan.textContent = accuracy ? `~${Math.round(accuracy)}m` : 'Default';
+                locationInfoDiv.classList.remove('hidden');
+            }
+
+            const now = customDate instanceof Date ? customDate : new Date();
+            const moonIlluminationData = SunCalc.getMoonIllumination(now);
+            const moonTimesData = SunCalc.getMoonTimes(now, lat, lon);
+            const moonPositionDataRaw = SunCalc.getMoonPosition(now, lat, lon);
+
+            currentMoonPositionData = {
+                altitude: moonPositionDataRaw.altitude,
+                azimuth: moonPositionDataRaw.azimuth,
+                distance: moonPositionDataRaw.distance,
+                phase: moonIlluminationData.phase
+            };
+
+            phaseNameSpan.textContent = getPhaseName(moonIlluminationData.phase);
+            const currentAnimationDuration = isAutoRefresh ? ANIMATION_DURATION / 2 : ANIMATION_DURATION;
+            animateCountUp(illuminationValueSpan, moonIlluminationData.fraction * 100, currentAnimationDuration, 1);
+            const moonAge = moonIlluminationData.phase * LUNAR_CYCLE_DAYS;
+            animateCountUp(moonAgeValueSpan, moonAge, currentAnimationDuration, 1);
+
+            await updateMoonVisualWithNasa(now);
+
+            let riseTime = formatTime(moonTimesData.rise); let setTime = formatTime(moonTimesData.set); let timesMsg = '';
+            if (moonTimesData.alwaysUp) { riseTime = 'Up All Day'; setTime = ' '; timesMsg = 'Moon is above horizon all day.'; }
+            else if (moonTimesData.alwaysDown) { riseTime = 'Down All Day'; setTime = ' '; timesMsg = 'Moon is below horizon all day.'; }
+            else if (isNaN(moonTimesData.rise?.getTime()) && !isNaN(moonTimesData.set?.getTime())) { riseTime = 'Rises Tomorrow'; }
+            else if (!isNaN(moonTimesData.rise?.getTime()) && isNaN(moonTimesData.set?.getTime())) { setTime = 'Sets Tomorrow'; }
+            else if (isNaN(moonTimesData.rise?.getTime()) && isNaN(moonTimesData.set?.getTime())) { riseTime = 'N/A'; setTime = 'N/A'; timesMsg = 'Rise/Set times unavailable.'; }
+            moonriseSpan.textContent = riseTime; moonsetSpan.textContent = setTime; moonTimesMessage.textContent = timesMsg;
+
+            const altitudeDeg = moonPositionDataRaw.altitude * 180 / Math.PI;
+            animateCountUp(altitudeValueSpan, altitudeDeg, currentAnimationDuration, 1);
+            let azimuthDegreesSC = moonPositionDataRaw.azimuth * 180 / Math.PI;
+            let displayAzimuth = (azimuthDegreesSC + 180) % 360;
+            animateCountUp(azimuthValueSpan, displayAzimuth, currentAnimationDuration, 1);
+
+            animateCountUp(distanceValueSpan, Math.round(moonPositionDataRaw.distance), currentAnimationDuration, 0, true);
+            zodiacSpan.textContent = getZodiacSign(moonPositionDataRaw.eclipticLon * 180 / Math.PI);
+
+            const upcoming = calculateUpcomingPhases(moonIlluminationData.phase, now);
+            nextNewMoonSpan.textContent = formatDate(upcoming.newMoon);
+            nextFirstQuarterSpan.textContent = formatDate(upcoming.firstQuarter);
+            nextFullMoonSpan.textContent = formatDate(upcoming.fullMoon);
+            nextLastQuarterSpan.textContent = formatDate(upcoming.lastQuarter);
+
+            if (typeof updateSkyMapWithCurrentData === "function" && skyMapModal.classList.contains('visible') && skyMapInitialized) {
+                updateSkyMapWithCurrentData();
+            }
+        }
+
+        function setDatePickerToToday() {
+            const today = new Date();
+            moonDatePicker.value = today.toISOString().slice(0, 10);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setDatePickerToToday();
+            createStarryBackground();
+            updateMoonInfo(false);
+
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            autoRefreshTimer = setInterval(() => { updateMoonInfo(true, selectedDate); }, AUTO_REFRESH_INTERVAL_MS);
+        });
+
+        moonDatePicker.addEventListener('change', async (e) => {
+            const val = moonDatePicker.value;
+            if (val) {
+                const picked = new Date(val + "T12:00:00");
+                selectedDate = picked;
+                await updateMoonInfo(false, picked);
+            }
+        });
+        moonDateTodayBtn.addEventListener('click', async () => {
+            setDatePickerToToday();
+            selectedDate = null;
+            await updateMoonInfo(false, null);
+        });
+
+        refreshButton.addEventListener('click', () => { if (!refreshButton.disabled) { updateMoonInfo(false, selectedDate); } });
+
+        skyMapButton.addEventListener('click', async () => {
+            skyMapModal.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+            skyMapLoaderContainer.classList.remove('hidden');
+            await updateMoonInfo(true, selectedDate);
+            setTimeout(() => {
+                initSkyMap();
+                onSkyMapResize();
+                updateSkyMapWithCurrentData();
+                if (!skyMapAnimationId) animateSkyMap();
+            }, 50);
+        });
+
+        modalCloseButton.addEventListener('click', () => {
+            skyMapModal.classList.remove('visible');
+            document.body.style.overflow = '';
+            if (skyMapAnimationId) {
+                cancelAnimationFrame(skyMapAnimationId);
+                skyMapAnimationId = null;
+            }
+            window.removeEventListener('resize', onSkyMapResize);
+        });
+
+        skyMapModal.addEventListener('click', (event) => {
+            if (event.target === skyMapModal) {
+                modalCloseButton.click();
+            }
+        });
+
+        // --- Customizable Data View Logic ---
+        const customizeViewBtn = document.getElementById('customize-view-btn');
+        const customizeViewModal = document.getElementById('customize-view-modal');
+        const customizeModalClose = document.getElementById('customize-modal-close');
+        const customizeViewForm = document.getElementById('customize-view-form');
+
+        // Section keys and their default visibility
+        const DATA_SECTIONS = [
+            { key: "moon-visual", default: true },
+            { key: "primary-details", default: true },
+            { key: "secondary-details", default: true },
+            { key: "celestial-viewer", default: true },
+            { key: "upcoming-phases", default: true },
+            { key: "date-picker", default: true }
+        ];
+
+        function getSectionVisibility() {
+            try {
+                const stored = localStorage.getItem("moonAppSectionVisibility");
+                if (stored) return JSON.parse(stored);
+            } catch {}
+            // Default: all true
+            const defaults = {};
+            DATA_SECTIONS.forEach(s => { defaults[s.key] = s.default; });
+            return defaults;
+        }
+
+        function setSectionVisibility(visibility) {
+            localStorage.setItem("moonAppSectionVisibility", JSON.stringify(visibility));
+        }
+
+        function applySectionVisibility() {
+            const visibility = getSectionVisibility();
+            DATA_SECTIONS.forEach(s => {
+                const els = document.querySelectorAll(`[data-section="${s.key}"]`);
+                els.forEach(el => {
+                    el.style.display = visibility[s.key] ? "" : "none";
+                });
+            });
+            // Always show the customize button
+            if (customizeViewBtn) customizeViewBtn.style.display = "";
+        }
+
+        function updateCustomizeFormFromState() {
+            const visibility = getSectionVisibility();
+            if (!customizeViewForm) return;
+            DATA_SECTIONS.forEach(s => {
+                const input = customizeViewForm.querySelector(`input[data-section="${s.key}"]`);
+                if (input) input.checked = !!visibility[s.key];
+            });
+        }
+
+        // Modal open/close
+        if (customizeViewBtn && customizeViewModal) {
+            customizeViewBtn.addEventListener("click", () => {
+                updateCustomizeFormFromState();
+                customizeViewModal.classList.add("visible");
+                document.body.style.overflow = "hidden";
+            });
+        }
+        if (customizeModalClose && customizeViewModal) {
+            customizeModalClose.addEventListener("click", () => {
+                customizeViewModal.classList.remove("visible");
+                document.body.style.overflow = "";
+            });
+        }
+        if (customizeViewModal) {
+            customizeViewModal.addEventListener("click", (e) => {
+                if (e.target === customizeViewModal) {
+                    customizeModalClose.click();
+                }
+            });
+        }
+
+        // Handle checkbox changes
+        if (customizeViewForm) {
+            customizeViewForm.addEventListener("change", () => {
+                const visibility = getSectionVisibility();
+                DATA_SECTIONS.forEach(s => {
+                    const input = customizeViewForm.querySelector(`input[data-section="${s.key}"]`);
+                    if (input) visibility[s.key] = !!input.checked;
+                });
+                setSectionVisibility(visibility);
+                applySectionVisibility();
+            });
+        }
+
+        // Apply on load
+        document.addEventListener('DOMContentLoaded', () => {
+            applySectionVisibility();
+        });
+
+        // --- Notification Modal Logic ---
+        const setNotificationsBtn = document.getElementById('set-notifications-btn');
+        const notificationModal = document.getElementById('notification-modal');
+        const notificationModalClose = document.getElementById('notification-modal-close');
+        const notificationSettingsForm = document.getElementById('notification-settings-form');
+        const notificationPermissionMessage = document.getElementById('notification-permission-message');
+
+        // Save notification settings in localStorage
+        function getNotificationSettings() {
+            try {
+                const stored = localStorage.getItem("moonAppNotificationSettings");
+                if (stored) return JSON.parse(stored);
+            } catch {}
+            return {
+                fullMoon: false,
+                newMoon: false,
+                firstQuarter: false,
+                lastQuarter: false,
+                eclipse: false,
+                daysBefore: 1
+            };
+        }
+        function setNotificationSettings(settings) {
+            localStorage.setItem("moonAppNotificationSettings", JSON.stringify(settings));
+        }
+        function updateNotificationFormFromState() {
+            const settings = getNotificationSettings();
+            if (!notificationSettingsForm) return;
+            notificationSettingsForm.fullMoon.checked = !!settings.fullMoon;
+            notificationSettingsForm.newMoon.checked = !!settings.newMoon;
+            notificationSettingsForm.firstQuarter.checked = !!settings.firstQuarter;
+            notificationSettingsForm.lastQuarter.checked = !!settings.lastQuarter;
+            notificationSettingsForm.eclipse.checked = !!settings.eclipse;
+            notificationSettingsForm.daysBefore.value = settings.daysBefore || 1;
+        }
+
+        // Modal open/close
+        if (setNotificationsBtn && notificationModal) {
+            setNotificationsBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                updateNotificationFormFromState();
+                notificationPermissionMessage.classList.add("hidden");
+                notificationModal.classList.add("visible");
+                document.body.style.overflow = "hidden";
+            });
+        }
+        if (notificationModalClose && notificationModal) {
+            notificationModalClose.addEventListener("click", () => {
+                notificationModal.classList.remove("visible");
+                document.body.style.overflow = "";
+            });
+        }
+        if (notificationModal) {
+            notificationModal.addEventListener("click", (e) => {
+                if (e.target === notificationModal) {
+                    notificationModalClose.click();
+                }
+            });
+        }
+
+        // Handle notification settings form
+        if (notificationSettingsForm) {
+            notificationSettingsForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const form = notificationSettingsForm;
+                const settings = {
+                    fullMoon: form.fullMoon.checked,
+                    newMoon: form.newMoon.checked,
+                    firstQuarter: form.firstQuarter.checked,
+                    lastQuarter: form.lastQuarter.checked,
+                    eclipse: form.eclipse.checked,
+                    daysBefore: Math.max(0, Math.min(7, parseInt(form.daysBefore.value) || 1))
+                };
+                setNotificationSettings(settings);
+
+                // Request permission if needed
+                if ("Notification" in window) {
+                    if (Notification.permission === "default") {
+                        try {
+                            const perm = await Notification.requestPermission();
+                            if (perm !== "granted") {
+                                notificationPermissionMessage.textContent = "Notifications are blocked or denied. Please allow notifications in your browser settings.";
+                                notificationPermissionMessage.classList.remove("hidden");
+                                return;
+                            }
+                        } catch {
+                            notificationPermissionMessage.textContent = "Unable to request notification permission.";
+                            notificationPermissionMessage.classList.remove("hidden");
+                            return;
+                        }
+                    } else if (Notification.permission === "denied") {
+                        notificationPermissionMessage.textContent = "Notifications are blocked or denied. Please allow notifications in your browser settings.";
+                        notificationPermissionMessage.classList.remove("hidden");
+                        return;
+                    }
+                } else {
+                    notificationPermissionMessage.textContent = "Notifications are not supported in this browser.";
+                    notificationPermissionMessage.classList.remove("hidden");
+                    return;
+                }
+
+                notificationPermissionMessage.textContent = "Notifications enabled! You will be reminded for selected events.";
+                notificationPermissionMessage.classList.remove("hidden");
+
+                // (Demo only) Show a test notification
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("Moon Phases", {
+                        body: "You will be notified for selected moon events.",
+                        icon: "https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3498.jpg"
+                    });
+                }
+
+                // TODO: In a real app, schedule notifications using Service Worker or background logic.
+            });
+        }
+
+        // Update the 3D moon's material to match the current phase and make it bright
+        function updateMoonMaterialForPhase(phaseValue) {
+            if (!moonMesh) return;
+            // Pick the closest phase image
+            const phaseIdx = Math.round((phaseValue || 0) * (moonPhaseImages.length - 1));
+            const phaseImgUrl = moonPhaseImages[phaseIdx];
+
+            // Load the phase texture and bump
+            const texLoader = new THREE.TextureLoader();
+            texLoader.load(phaseImgUrl, (moonTexture) => {
+                texLoader.load("https://www.solarsystemscope.com/textures/download/2k_moon.jpg", (moonBump) => {
+                    // Bright, advanced material
+                    moonMesh.material = new THREE.MeshPhysicalMaterial({
+                        map: moonTexture,
+                        bumpMap: moonBump,
+                        bumpScale: 0.45,
+                        color: 0xffffff,
+                        roughness: 0.22,
+                        metalness: 0.08,
+                        clearcoat: 0.8,
+                        clearcoatRoughness: 0.13,
+                        reflectivity: 0.22,
+                        transmission: 0.0,
+                        emissive: 0xffffff,
+                        emissiveIntensity: 0.22,
+                        sheen: 1,
+                        sheenColor: new THREE.Color(0xeaf6ff),
+                        sheenRoughness: 0.18,
+                        sheenColorIntensity: 0.7
+                    });
+                    moonMesh.material.needsUpdate = true;
+                });
+            });
+        }
+
+        // --- ICS Download Logic ---
+        // Helper: Find next date for a given phase
+        function getNextPhaseDate(phaseKey) {
+            const now = new Date();
+            const moonIllumination = SunCalc.getMoonIllumination(now);
+            const currentPhase = moonIllumination.phase;
+            const LUNAR_CYCLE_DAYS = 29.530588853;
+            const targetPhases = {
+                newMoon: 0,
+                firstQuarter: 0.25,
+                fullMoon: 0.5,
+                lastQuarter: 0.75
+            };
+            if (phaseKey === "eclipse") {
+                // For demo: just return next full moon (real eclipse calculation is complex)
+                return getNextPhaseDate("fullMoon");
+            }
+            const targetPhase = targetPhases[phaseKey];
+            if (typeof targetPhase === "undefined") return null;
+            let phaseDifference = targetPhase - currentPhase;
+            if (phaseDifference < -0.01) phaseDifference += 1;
+            const daysUntilPhase = phaseDifference * LUNAR_CYCLE_DAYS;
+            const phaseTimestamp = now.getTime() + daysUntilPhase * 24 * 60 * 60 * 1000;
+            return new Date(phaseTimestamp);
+        }
+
+        // Helper: Generate ICS file content
+        function generateICS(title, description, date) {
+            function pad(n) { return n.toString().padStart(2, "0"); }
+            const dt = date;
+            const dtStart = `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T120000Z`;
+            const dtEnd = `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T130000Z`;
+            const uid = `${title.replace(/\s/g, '')}-${dtStart}@moonphasespro`;
+            return [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//Moon Phases Pro//EN",
+                "BEGIN:VEVENT",
+                `UID:${uid}`,
+                `DTSTAMP:${dtStart}`,
+                `DTSTART:${dtStart}`,
+                `DTEND:${dtEnd}`,
+                `SUMMARY:${title}`,
+                `DESCRIPTION:${description}`,
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\r\n");
+        }
+
+        // Download ICS when button clicked
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".ics-download-btn").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    const phase = btn.getAttribute("data-phase");
+                    let title, desc, date;
+                    switch (phase) {
+                        case "fullMoon":
+                            title = "Full Moon";
+                            desc = "The next Full Moon occurs on this date.";
+                            date = getNextPhaseDate("fullMoon");
+                            break;
+                        case "newMoon":
+                            title = "New Moon";
+                            desc = "The next New Moon occurs on this date.";
+                            date = getNextPhaseDate("newMoon");
+                            break;
+                        case "firstQuarter":
+                            title = "First Quarter Moon";
+                            desc = "The next First Quarter Moon occurs on this date.";
+                            date = getNextPhaseDate("firstQuarter");
+                            break;
+                        case "lastQuarter":
+                            title = "Last Quarter Moon";
+                            desc = "The next Last Quarter Moon occurs on this date.";
+                            date = getNextPhaseDate("lastQuarter");
+                            break;
+                        case "eclipse":
+                            title = "Lunar Eclipse";
+                            desc = "The next lunar eclipse (approximate, for demo) occurs on this date.";
+                            date = getNextPhaseDate("eclipse");
+                            break;
+                        default:
+                            return;
+                    }
+                    if (!date) return;
+                    const ics = generateICS(title, desc, date);
+                    const blob = new Blob([ics], { type: "text/calendar" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${title.replace(/\s/g, "_")}_${date.toISOString().slice(0,10)}.ics`;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
