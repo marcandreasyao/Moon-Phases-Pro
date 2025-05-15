@@ -365,29 +365,34 @@
             position:fixed;
             top:20px;
             left:50%;
-            transform:translateX(-50%);
-            background-color:rgba(28, 28, 30, 0.85); /* Consistent with data sections */
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
-            color:white;
-            padding: 0.75rem 1.25rem;
-            border-radius:10px;
+            transform:translateX(-50%) translateY(-20px);
+            background: rgba(28, 28, 30, 0.92);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 16px;
             z-index:2000;
-            box-shadow:0 4px 15px rgba(0,0,0,0.25);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            box-shadow:0 8px 32px rgba(0,0,0,0.25), 0 1.5px 4px rgba(0,0,0,0.10);
+            transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
             opacity: 0;
-            transform: translate(-50%, -20px); /* Start slightly above */
-            font-size: 0.9rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            border: none;
+            pointer-events: none;
         }
         .custom-message-box.success {
-             background-color: rgba(52, 199, 89, 0.85); /* Apple green */
+            background: linear-gradient(90deg, #34C759 80%, #28A745 100%);
+            color: #fff;
         }
         .custom-message-box.error {
-             background-color: rgba(255, 59, 48, 0.85); /* Apple red */
+            background: linear-gradient(90deg, #FF3B30 80%, #C62828 100%);
+            color: #fff;
         }
-         .custom-message-box.info {
-             background-color: rgba(0, 122, 255, 0.85); /* Apple blue */
+        .custom-message-box.info {
+            background: linear-gradient(90deg, #0A84FF 80%, #1976D2 100%);
+            color: #fff;
         }
 
 
