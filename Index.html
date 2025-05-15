@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moon Phases Pro v2.0</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#22223b">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1935,6 +1937,12 @@
             notificationBar.className = notificationBar.className.replace('visible', '');
         }
         window.hideNotificationBar = hideNotificationBar; // For close button
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js');
+            });
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "Moon Phases Pro",
+  "short_name": "MoonPhases",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#22223b",
+  "description": "A beautiful app to view the phases of the moon.",
+  "icons": [
+    {
+      "src": "lroc_color_poles_1k.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
