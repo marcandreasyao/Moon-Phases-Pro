@@ -1,7 +1,7 @@
 {
   "name": "Moon Phases Pro v2.0",
   "short_name": "Moon Phases Pro",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#000000",
