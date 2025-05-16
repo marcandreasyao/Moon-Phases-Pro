@@ -796,7 +796,7 @@
                         <div class="flex items-center gap-2">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="firstQuarter" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
                                 <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
                             </label>
                             <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-200 to-blue-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-200 transition hover:from-blue-300 hover:to-blue-500 active:scale-95" data-phase="firstQuarter" title="Download ICS for next First Quarter">
@@ -819,7 +819,7 @@
                         <div class="flex items-center gap-2">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="lastQuarter" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
                                 <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
                             </label>
                             <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-100 transition hover:from-blue-200 hover:to-blue-400 active:scale-95" data-phase="lastQuarter" title="Download ICS for next Last Quarter">
@@ -947,7 +947,19 @@
         function formatTime(date) { if (!date || isNaN(date.getTime())) return '–'; return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
         function formatDate(date) { if (!date || isNaN(date.getTime())) return '–'; return date.toLocaleDateString([], { month: 'short', day: 'numeric' }); }
         function getPhaseName(phaseValue) { if (phaseValue < 0.02 || phaseValue > 0.98) return 'New Moon'; if (phaseValue < 0.23) return 'Waxing Crescent'; if (phaseValue < 0.27) return 'First Quarter'; if (phaseValue < 0.48) return 'Waxing Gibbous'; if (phaseValue < 0.52) return 'Full Moon'; if (phaseValue < 0.73) return 'Waning Gibbous'; if (phaseValue < 0.77) return 'Last Quarter'; return 'Waning Crescent'; }
-        function getZodiacSign(longitude) { const normalizedLon = (longitude % 360 + 360) % 360; const signs = [ { name: 'Aries', start: 0 }, { name: 'Taurus', start: 30 }, { name: 'Gemini', start: 60 }, { name: 'Cancer', start: 90 }, { name: 'Leo', start: 120 }, { name: 'Virgo', start: 150 }, { name: 'Libra', start: 180 }, { name: 'Scorpio', start: 210 }, { name: 'Sagittarius', start: 240 }, { name: 'Capricorn', start: 270 }, { name: 'Aquarius', start: 300 }, { name: 'Pisces', start: 330 } ]; for (let i = signs.length - 1; i >= 0; i--) { if (normalizedLon >= signs[i].start) return signs[i].name; } return 'Aries'; }
+        function getZodiacSign(longitude) {
+            // Zodiac signs in order, each 30 degrees
+            const signs = [
+                "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+                "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+            ];
+            // Aries starts at 0°, each sign is 30°
+            let deg = longitude;
+            if (deg < 0) deg += 360;
+            const index = Math.floor((deg % 360) / 30);
+            return signs[index];
+        }
+        
         function animateCountUp(element, endValue, duration = 1000, decimals = 0, isLocaleString = false) { if (!element) return; const startValue = parseFloat(element.textContent.replace(/,/g, '')) || 0; const range = endValue - startValue; let startTime = null; if (Math.abs(range) < 0.01 && decimals > 0) { element.textContent = isLocaleString ? Math.round(endValue).toLocaleString() : endValue.toFixed(decimals); return; } if (range === 0 && decimals === 0) { element.textContent = isLocaleString ? Math.round(endValue).toLocaleString() : endValue.toFixed(decimals); return; } function step(timestamp) { if (!startTime) startTime = timestamp; const progress = Math.min((timestamp - startTime) / duration, 1); let currentValue = startValue + range * progress; if (isLocaleString) { element.textContent = Math.round(currentValue).toLocaleString(); } else { element.textContent = currentValue.toFixed(decimals); } if (progress < 1) { requestAnimationFrame(step); } else { if (isLocaleString) { element.textContent = Math.round(endValue).toLocaleString(); } else { element.textContent = endValue.toFixed(decimals); } } } requestAnimationFrame(step); }
         function updateMoonVisual(moonAgeDays) { if (!moonImageDiv) return; let imageIndex = Math.round(moonAgeDays); imageIndex = Math.max(0, Math.min(MOON_IMAGE_COUNT - 1, imageIndex)); const imageUrl = moonPhaseImages[imageIndex]; if (imageUrl) { const img = new Image(); img.onload = () => { moonImageDiv.style.backgroundImage = `url('${imageUrl}')`; }; img.onerror = () => { console.error(`Failed to load image for index ${imageIndex}: ${imageUrl}`); moonImageDiv.style.backgroundImage = `url('https://placehold.co/250x250/2c2c2e/cccccc?text=Load+Error')`; }; img.src = imageUrl; } else { moonImageDiv.style.backgroundImage = `url('https://placehold.co/250x250/ff0000/ffffff?text=Missing+URL')`; } }
         function calculateUpcomingPhases(currentPhaseValue, currentDate) { const targetPhases = { newMoon: 0, firstQuarter: 0.25, fullMoon: 0.5, lastQuarter: 0.75 }; const results = {}; const currentTimestamp = currentDate.getTime(); for (const [name, targetPhase] of Object.entries(targetPhases)) { let phaseDifference = targetPhase - currentPhaseValue; if (phaseDifference < -0.01) { phaseDifference += 1; } const daysUntilPhase = phaseDifference * LUNAR_CYCLE_DAYS; const phaseTimestamp = currentTimestamp + daysUntilPhase * 24 * 60 * 60 * 1000; results[name] = new Date(phaseTimestamp); } return results; }
@@ -1960,6 +1972,43 @@
                 navigator.serviceWorker.register('service-worker.js');
             });
         }
+
+        // Gently prompt user to install the PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          // Create a custom install button
+          const installBtn = document.createElement('button');
+          installBtn.textContent = 'Install Moon Phases Pro';
+          installBtn.style.position = 'fixed';
+          installBtn.style.bottom = '32px';
+          installBtn.style.right = '32px';
+          installBtn.style.zIndex = '1000';
+          installBtn.style.background = '#22223b';
+          installBtn.style.color = '#fff';
+          installBtn.style.border = 'none';
+          installBtn.style.padding = '1em 2em';
+          installBtn.style.borderRadius = '8px';
+          installBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+          installBtn.style.fontSize = '1rem';
+          installBtn.style.cursor = 'pointer';
+          document.body.appendChild(installBtn);
+          installBtn.addEventListener('click', async () => {
+            installBtn.disabled = true;
+            installBtn.textContent = 'Installing...';
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              installBtn.textContent = 'Installed!';
+              setTimeout(() => installBtn.remove(), 2000);
+            } else {
+              installBtn.textContent = 'Install Moon Phases Pro';
+              installBtn.disabled = false;
+            }
+            deferredPrompt = null;
+          });
+        });
     </script>
 </body>
 </html>
