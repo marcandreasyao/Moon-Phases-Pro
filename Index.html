@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moon Phases Pro v2.0</title>
+    <!-- Add favicon for the website -->
+    <link rel="icon" type="image/jpeg" href="lroc_color_poles_1k.jpg">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#22223b">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -866,7 +868,7 @@
     </div>
 
     <footer class="pb-4">
-                Designed by Marc Andréas Yao | Powered by <a href="https://github.com/marcandreasyao/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js & <a href="https://threejs.org" target="_blank" rel="noopener noreferrer">Three.js</a> | Moon images source: <a href="https://svs.gsfc.nasa.gov/5415" target="_blank" rel="noopener noreferrer">NASA SVS</a>
+                Designed by Marc Andréas Yao | Powered by <a href="https://github.com/marcandreasyao/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a> & <a href="https://threejs.org" target="_blank" rel="noopener noreferrer">Three.js</a> | Moon images source: <a href="https://svs.gsfc.nasa.gov/5415" target="_blank" rel="noopener noreferrer">NASA SVS</a>
         <!-- Designed by Marc Andréas Yao | Powered by <a href="https://github.com/mourner/suncalc" target="_blank" rel="noopener noreferrer">SunCalc.js</a> & <a href="https://threejs.org" target="_blank" rel="noopener noreferrer">Three.js</a> | Moon images source: <a href="https://svs.gsfc.nasa.gov/5415" target="_blank" rel="noopener noreferrer">NASA SVS</a> -->
     </footer>
 
@@ -1934,7 +1936,7 @@
                 </span>`;
             } else if (type === "error") {
                 icon = `<span class="notif-icon" aria-hidden="true">
-                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="none"/><path d="M9 9l6 6M15 9l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="none"/><path d="M9 9l6 6M15 9l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </span>`;
             } else if (type === "info") {
                 icon = `<span class="notif-icon" aria-hidden="true">
