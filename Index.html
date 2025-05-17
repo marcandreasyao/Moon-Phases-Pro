@@ -724,6 +724,11 @@
                     <span class="text-xs text-gray-400 uppercase tracking-wide">Distance</span>
                     <span id="sky-map-distance" class="text-base font-semibold text-blue-200">–</span>
                 </div>
+                <!-- Visibility Status -->
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-400 uppercase tracking-wide">Visibility</span>
+                    <span id="sky-map-visibility" class="text-base font-semibold text-blue-200">–</span>
+                </div>
             </div>
             <p class="text-xs text-gray-400 mt-3 text-center">Use mouse/touch to navigate (orbit). Scroll to zoom.</p>
         </div>
@@ -923,6 +928,7 @@
         const skyMapAzimuth = document.getElementById('sky-map-azimuth');
         const skyMapDirection = document.getElementById('sky-map-direction');
         const skyMapDistance = document.getElementById('sky-map-distance');
+        const skyMapVisibility = document.getElementById('sky-map-visibility');
 
         // Date Picker Elements
         const moonDatePicker = document.getElementById('moon-date-picker');
@@ -949,7 +955,7 @@
         const moonPhaseImages = ['https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2803.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2824.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2852.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2876.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2924.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2900.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2970.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2975.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.2997.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3023.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3043.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3068.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3094.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3118.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3164.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3188.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3213.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3238.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3262.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3287.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3311.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3359.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3384.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3408.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3432.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3454.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3461.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3464.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3487.jpg','https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3498.jpg'];
 
         // --- Three.js Scene Variables ---
-        let skyScene, skyCamera, skyRenderer, skyControls, moonMesh, starsPoints, horizonPlane;
+               let skyScene, skyCamera, skyRenderer, skyControls, moonMesh, starsPoints, horizonPlane;
         let skyMapInitialized = false;
         let skyMapAnimationId = null;
         let moonLight = null; // reference to the main directional light for the sun
@@ -1363,6 +1369,10 @@
             skyMapAzimuth.textContent = azDeg.toFixed(1) + "°";
             skyMapDirection.textContent = azimuthToDirection(azDeg);
             skyMapDistance.textContent = Math.round(currentMoonPositionData.distance).toLocaleString() + " km";
+            // Visibility Status
+            const visibilityStatus = altDeg > 0 ? "Visible now" : "Below horizon";
+            const skyMapVisibility = document.getElementById('sky-map-visibility');
+            if (skyMapVisibility) skyMapVisibility.textContent = visibilityStatus;
         }
 
         function updateSkyMapWithCurrentData() {
