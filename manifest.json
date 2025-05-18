@@ -15,10 +15,13 @@
   "prefer_related_applications": false,
   "icons": [
     { "src": "lroc_color_poles_1k.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any maskable" },
-    { "src": "lroc_color_poles_1k.jpg", "sizes": "192x192", "type": "image/jpeg" }
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "192x192", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "180x180", "type": "image/jpeg", "purpose": "apple touch icon" }
   ],
   "screenshots": [
-    { "src": "lroc_color_poles_1k.jpg", "sizes": "512x512", "type": "image/jpeg", "label": "Main screen" }
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "512x512", "type": "image/jpeg", "label": "Main screen" },
+    { "src": "eso0932a (splashcreen).jpg", "sizes": "1280x2778", "type": "image/jpeg", "label": "iPhone 14 Pro Max splash" },
+    { "src": "eso0932a (splashcreen).jpg", "sizes": "1170x2532", "type": "image/jpeg", "label": "iPhone 12/13/14 splash" }
   ],
   "shortcuts": [
     {

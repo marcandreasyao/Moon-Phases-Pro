@@ -14,13 +14,15 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <!-- Apple Touch Startup Images and Icons -->
-    <link rel="apple-touch-icon" sizes="192x192" href="lroc_color_poles_1k.jpg">
-    <link rel="apple-touch-icon" sizes="512x512" href="lroc_color_poles_1k.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="lroc_color_poles_1k.jpg">
+    <link rel="apple-touch-startup-image" href="eso0932a (splashcreen).jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="eso0932a (splashcreen).jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="eso0932a (splashcreen).jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Moon Phases Pro">
+    <meta name="format-detection" content="telephone=no">
     <meta name="description" content="Your Daily Moon Phase Companion.">
-    <!-- <meta name="description" content="A beautiful app to view the phases of the moon."> -->
     <meta name="application-name" content="Moon Phases Pro">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#22223b">
@@ -458,6 +460,77 @@
                 padding: 0.7rem 1rem 0.7rem 0.9rem;
             }
         }
+
+        /* PWA Install Button Styling */
+        #pwa-install-section {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            opacity: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 16px 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #pwa-install-section.animate-fade-in {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #pwa-install-button {
+            background: linear-gradient(135deg, #0A84FF, #0066CC);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        #pwa-install-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+        }
+
+        #pwa-install-button:active {
+            transform: translateY(0);
+        }
+
+        .install-icon {
+            width: 24px;
+            height: 24px;
+            fill: #f5f5f7;
+        }
+
+        .install-text {
+            color: #f5f5f7;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        @media (max-width: 640px) {
+            #pwa-install-section {
+                bottom: 16px;
+                padding: 12px 20px;
+            }
+            
+            .install-text {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -802,7 +875,7 @@
                         <div class="flex items-center gap-2">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="firstQuarter" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
                                 <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
                             </label>
                             <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-200 to-blue-400 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-200 transition hover:from-blue-300 hover:to-blue-500 active:scale-95" data-phase="firstQuarter" title="Download ICS for next First Quarter">
@@ -825,7 +898,7 @@
                         <div class="flex items-center gap-2">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="lastQuarter" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
+                                <div class="w-11 h-6 bg-gray-400/30 rounded-full peer-checked:bg-blue-500/80 transition-all duration-200 shadow-inner"></div>
                                 <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
                             </label>
                             <button type="button" class="ics-download-btn ml-2 px-3 py-1.5 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 text-white text-xs font-semibold shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-100 transition hover:from-blue-200 hover:to-blue-400 active:scale-95" data-phase="lastQuarter" title="Download ICS for next Last Quarter">
