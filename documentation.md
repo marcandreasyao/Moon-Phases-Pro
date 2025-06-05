@@ -80,7 +80,7 @@ Moon Phases Pro 2.0 is your daily companion for exploring and understanding luna
 
 ## 🎨 Design Philosophy
 
-Inspired by Apple's design language, Moon Phases Pro 2.0 combines:
+Inspired by very modern design language, Moon Phases Pro 2.0 combines:
 - Clean, minimal interfaces
 - Smooth animations and transitions
 - Glassmorphic UI elements
