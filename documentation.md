@@ -99,7 +99,7 @@ Inspired by Apple's design language, Moon Phases Pro 2.0 combines:
 
 Designed by Marc Andréas Yao
 - Moon imagery powered by NASA SVS
-- Astronomical calculations by SunCalc
+- Astronomical calculations by SunCalc (Edited version)
 - 3D visualizations powered by Three.js
 
 ---
