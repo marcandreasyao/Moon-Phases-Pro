@@ -104,4 +104,4 @@ Designed by Marc Andréas Yao
 
 ---
 
-*Moon Phases Pro 2.0 - Your Window to the Lunar World*
+*Moon Phases Pro 2.0 - Your Window to the Lunar World and Daily Moon Companion.*
