@@ -9,7 +9,7 @@
   "theme_color": "#22223b",
   "description": "Your Daily Moon Phase Companion",
   "categories": ["education", "utilities", "reference", "science"],
-  "orientation": "portrait",
+  "orientation": "standalone",
   "lang": "en-US",
   "dir": "ltr",
   "scope": ".",
