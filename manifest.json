@@ -2,6 +2,7 @@
   "name": "Moon Phases Pro v2.0",
   "short_name": "Moon Phases Pro",
   "version": "2.0.0",
+  "id": "/?utm_source=pwa",
   "start_url": ".",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone"],
@@ -15,9 +16,16 @@
   "scope": ".",
   "prefer_related_applications": false,
   "icons": [
-    { "src": "lroc_color_poles_1k.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any maskable" },
-    { "src": "lroc_color_poles_1k.jpg", "sizes": "192x192", "type": "image/jpeg" },
-    { "src": "lroc_color_poles_1k.jpg", "sizes": "180x180", "type": "image/jpeg", "purpose": "apple touch icon" }
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "48x48", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "72x72", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "96x96", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "128x128", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "144x144", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "152x152", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "180x180", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "384x384", "type": "image/jpeg" },
+    { "src": "lroc_color_poles_1k.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any maskable" }
   ],
   "screenshots": [
     { "src": "lroc_color_poles_1k.jpg", "sizes": "512x512", "type": "image/jpeg", "label": "Main screen" },

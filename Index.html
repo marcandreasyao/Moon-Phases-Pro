@@ -1777,7 +1777,30 @@
         const notificationSettingsForm = document.getElementById('notification-settings-form');
         const notificationPermissionMessage = document.getElementById('notification-permission-message');
 
-        // Save notification settings in localStorage
+        // --- IndexedDB for settings and location ---
+        function openDb() {
+            return new Promise((resolve, reject) => {
+                const openRequest = indexedDB.open('moon-app-db', 1);
+                openRequest.onupgradeneeded = () => {
+                    const db = openRequest.result;
+                    if (!db.objectStoreNames.contains('settings')) {
+                        db.createObjectStore('settings', { keyPath: 'key' });
+                    }
+                };
+                openRequest.onsuccess = () => resolve(openRequest.result);
+                openRequest.onerror = () => reject(openRequest.error);
+            });
+        }
+
+        async function saveToIdb(key, value) {
+            const db = await openDb();
+            const transaction = db.transaction('settings', 'readwrite');
+            const store = transaction.objectStore('settings');
+            store.put({ key, value });
+            return transaction.complete;
+        }
+
+        // Save notification settings in localStorage and IndexedDB
         function getNotificationSettings() {
             try {
                 const stored = localStorage.getItem("moonAppNotificationSettings");
@@ -1792,8 +1815,9 @@
                 daysBefore: 1
             };
         }
-        function setNotificationSettings(settings) {
+        async function setNotificationSettings(settings) {
             localStorage.setItem("moonAppNotificationSettings", JSON.stringify(settings));
+            await saveToIdb('notificationSettings', settings);
         }
         function updateNotificationFormFromState() {
             const settings = getNotificationSettings();
@@ -1843,41 +1867,32 @@
                     eclipse: form.eclipse.checked,
                     daysBefore: Math.max(0, Math.min(7, parseInt(form.daysBefore.value) || 1))
                 };
-                setNotificationSettings(settings);
+                await setNotificationSettings(settings);
 
                 // Request permission if needed
-                if ("Notification" in window) {
-                    if (Notification.permission === "default") {
-                        try {
-                            const perm = await Notification.requestPermission();
-                            if (perm !== "granted") {
-                                showNotificationBar("Notifications are blocked or denied. Please allow notifications in your browser settings.", "error");
-                                return;
+                if ("Notification" in window && "serviceWorker" in navigator) {
+                    const permission = await Notification.requestPermission();
+                    if (permission === "granted") {
+                        const registration = await navigator.serviceWorker.ready;
+                        if ('periodicSync' in registration) {
+                            try {
+                                await registration.periodicSync.register('check-moon-phases', {
+                                    minInterval: 24 * 60 * 60 * 1000, // 1 day
+                                });
+                                showNotificationBar("Background checks for moon phases are enabled!", "success");
+                            } catch (error) {
+                                console.error("Periodic Sync could not be registered!", error);
+                                showNotificationBar("Background checks could not be enabled.", "error");
                             }
-                        } catch {
-                            showNotificationBar("Unable to request notification permission.", "error");
-                            return;
+                        } else {
+                             showNotificationBar("Background checks are not supported in this browser.", "info");
                         }
-                    } else if (Notification.permission === "denied") {
-                        showNotificationBar("Notifications are blocked or denied. Please allow notifications in your browser settings.", "error");
-                        return;
+                    } else {
+                        showNotificationBar("Notifications are blocked. Please enable them in your browser settings.", "error");
                     }
                 } else {
-                    showNotificationBar("Notifications are not supported in this browser.", "error");
-                    return;
+                    showNotificationBar("Notifications or Service Workers are not supported in this browser.", "error");
                 }
-
-                showNotificationBar("Notifications enabled! You will be reminded for selected events.", "success");
-
-                // (Demo only) Show a test notification
-                if ("Notification" in window && Notification.permission === "granted") {
-                    new Notification("Moon Phases", {
-                        body: "You will be notified for selected moon events.",
-                        icon: "https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.3498.jpg"
-                    });
-                }
-
-                // TODO: In a real app, schedule notifications using Service Worker or background logic.
             });
         }
 
