@@ -2,7 +2,7 @@ const CACHE_NAME = 'moon-phases-pro-v2.3';
 const OFFLINE_URL = 'offline.html';
 const urlsToCache = [
   '/',
-  '/Index.html',
+  '/index.html',
   '/manifest.json',
   '/install-prompt.js',
   '/security-suite.js',
