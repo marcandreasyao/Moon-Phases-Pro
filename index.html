@@ -1474,48 +1474,50 @@
                 starsPoints = new THREE.Points(starsGeometry, starsMaterial);
                 skyScene.add(starsPoints);
 
-                // --- Moon Mesh with NASA Texture and Displacement ---
-                const moonTextureURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/lroc_color_poles_1k.jpg";
-                const moonDisplacementURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/ldem_3_8bit.jpg";
+                // --- Moon Mesh with Local NASA Texture and Bump Map ---
                 const moonRadius = 2;
                 const moonSegments = 64;
                 const moonGeometry = new THREE.SphereGeometry(moonRadius, moonSegments, moonSegments);
+                
+                const textureLoader = new THREE.TextureLoader();
+                const moonAlbedo = textureLoader.load('lroc_color_poles_1k.jpg', () => {
+                    skyMapLoaderContainer.classList.add('hidden');
+                    clearTimeout(loaderTimeout);
+                }, undefined, () => {
+                    skyMapLoaderContainer.classList.add('hidden');
+                    clearTimeout(loaderTimeout);
+                });
+                const moonBumpMap = textureLoader.load('ldem_3_8bit.jpg');
+
                 const moonMaterial = new THREE.MeshStandardMaterial({
-                    roughness: 0.9,
-                    metalness: 0.1,
+                    map: moonAlbedo,
+                    bumpMap: moonBumpMap,
+                    bumpScale: 0.12,
+                    roughness: 0.82,
+                    metalness: 0.05,
                     color: 0xffffff
                 });
                 moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+                moonMesh.rotation.y = Math.PI / 2; // Orient near-side face toward camera
                 skyScene.add(moonMesh);
 
-                const textureLoader = new THREE.TextureLoader();
-                const colorMap = textureLoader.load(
-                    moonTextureURL,
-                    () => { // onLoad
-                        moonMaterial.map = colorMap;
-                        moonMaterial.needsUpdate = true;
-                        console.log("Moon color texture loaded.");
-                    },
-                    undefined, // onProgress (optional)
-                    (err) => { // onError
-                        console.error('Error loading moon color texture:', err);
-                        // Fallback or error indication for texture could be added here
-                    }
-                );
+                // --- Ambient Glow Sprite behind Moon ---
+                const glowCanvas = document.createElement('canvas');
+                glowCanvas.width = 128;
+                glowCanvas.height = 128;
+                const gCtx = glowCanvas.getContext('2d');
+                const grad = gCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+                grad.addColorStop(0, 'rgba(215, 235, 255, 0.8)');
+                grad.addColorStop(0.3, 'rgba(140, 190, 255, 0.25)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                gCtx.fillStyle = grad;
+                gCtx.fillRect(0, 0, 128, 128);
 
-                const displacementMap = textureLoader.load(
-                    moonDisplacementURL,
-                    () => { // onLoad
-                        moonMaterial.displacementMap = displacementMap;
-                        moonMaterial.displacementScale = 0.1; // Adjust for desired effect
-                        moonMaterial.needsUpdate = true;
-                        console.log("Moon displacement texture loaded.");
-                    },
-                    undefined, // onProgress
-                    (err) => { // onError
-                        console.error('Error loading moon displacement texture:', err);
-                    }
-                );
+                const glowTex = new THREE.CanvasTexture(glowCanvas);
+                const glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending });
+                window.moonGlowSprite = new THREE.Sprite(glowMat);
+                window.moonGlowSprite.scale.set(7, 7, 1);
+                skyScene.add(window.moonGlowSprite);
 
                 skyMapInitialized = true;
             } catch (error) {
@@ -1525,57 +1527,14 @@
                 return;
             }
 
-            // Hide loader after textures load or after fallback timeout
-            const hideLoader = () => {
-                skyMapLoaderContainer.classList.add('hidden');
-                clearTimeout(loaderTimeout);
-            };
-
-            // If moon texture loading is triggered, hook into its loader
-            if (typeof updateMoonMaterialForPhase === "function" && currentMoonPositionData && typeof currentMoonPositionData.phase === "number") {
-                // Patch updateMoonMaterialForPhase to hide loader after texture loads
-                const origUpdate = updateMoonMaterialForPhase;
-                updateMoonMaterialForPhase = function(phaseValue) {
-                    if (!moonMesh) { hideLoader(); return; }
-                    const phaseIdx = Math.round((phaseValue || 0) * (moonPhaseImages.length - 1));
-                    const phaseImgUrl = moonPhaseImages[phaseIdx];
-                    const texLoader = new THREE.TextureLoader();
-                    texLoader.load(phaseImgUrl, (moonTexture) => {
-                        texLoader.load("https://www.solarsystemscope.com/textures/download/2k_moon.jpg", (moonBump) => {
-                            moonMesh.material = new THREE.MeshPhysicalMaterial({
-                                map: moonTexture,
-                                bumpMap: moonBump,
-                                bumpScale: 0.45,
-                                color: 0xffffff,
-                                roughness: 0.22,
-                                metalness: 0.08,
-                                clearcoat: 0.8,
-                                clearcoatRoughness: 0.13,
-                                reflectivity: 0.22,
-                                transmission: 0.0,
-                                emissive: 0xffffff,
-                                emissiveIntensity: 0.22,
-                                sheen: 1,
-                                sheenColor: new THREE.Color(0xeaf6ff),
-                                sheenRoughness: 0.18,
-                                sheenColorIntensity: 0.7
-                            });
-                            moonMesh.material.needsUpdate = true;
-                            hideLoader();
-                        }, hideLoader, hideLoader);
-                    }, hideLoader, hideLoader);
-                };
-                updateMoonMaterialForPhase(currentMoonPositionData.phase);
-            } else {
-                hideLoader();
-            }
+            skyMapLoaderContainer.classList.add('hidden');
+            clearTimeout(loaderTimeout);
 
             if (!skyMapAnimationId) {
                 animateSkyMap();
             }
             if (currentMoonPositionData) {
                 updateSkyMapMoonPosition(currentMoonPositionData.altitude, currentMoonPositionData.azimuth);
-                // updateMoonMaterialForPhase(currentMoonPositionData.phase); // Already called above
             }
             window.addEventListener('resize', onSkyMapResize);
         }
@@ -1636,16 +1595,25 @@
         }
 
         function updateSkyMapMoonPosition(altitudeRad, azimuthRadSC) {
+            if (!moonMesh) return;
             const azimuthRadThreeJS = (azimuthRadSC + Math.PI) % (2 * Math.PI);
             const x = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * Math.sin(azimuthRadThreeJS);
             const y = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.sin(altitudeRad);
             const z = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * -Math.cos(azimuthRadThreeJS);
             moonMesh.position.set(x, y, z);
-            animateMoonPopIn();
-            if (typeof currentMoonPositionData === "object" && typeof currentMoonPositionData.phase === "number") {
-                updateMoonMaterialForPhase(currentMoonPositionData.phase);
+
+            // Orient moon mesh so near-side lunar surface (Mare Tranquillitatis, Tycho) faces observer
+            moonMesh.lookAt(skyCamera ? skyCamera.position : new THREE.Vector3(0, 1.7, 0));
+            moonMesh.rotateY(Math.PI / 2);
+
+            // Center radial glow halo sprite on moon mesh
+            if (window.moonGlowSprite) {
+                window.moonGlowSprite.position.set(x, y, z);
             }
+
+            animateMoonPopIn();
             updateSkyMapInfoPanel();
+            updateSunLightForScene();
             if (skyRenderer && skyScene && skyCamera && skyMapModal.classList.contains('visible')) {
                 skyRenderer.render(skyScene, skyCamera);
             }
@@ -1672,33 +1640,40 @@
             }
         }
 
-        // --- Update Sun (Directional Light) Position based on real sun position ---
+        // --- Update Sun (Directional Light) Position based on real phase illumination angle ---
         function updateSunLightForScene() {
-            if (!moonLight || !skyCamera) return;
-            // Use the user's ground position (camera's x,z) and current time
-            // For simplicity, use the last known lat/lon or default
-            let lat = defaultLocation.latitude, lon = defaultLocation.longitude;
-            if (typeof latSpan !== "undefined" && latSpan.textContent && !isNaN(Number(latSpan.textContent))) {
-                lat = Number(latSpan.textContent);
+            if (!moonLight || !moonMesh || !skyScene) return;
+
+            const phaseValue = (currentMoonPositionData && typeof currentMoonPositionData.phase === 'number')
+                ? currentMoonPositionData.phase
+                : 0.5;
+
+            // Compute sunlight direction vector from phase angle relative to Earth camera
+            // Phase: 0 = New Moon (Sun behind Moon), 0.25 = 1st Qtr, 0.5 = Full Moon (Sun behind camera), 0.75 = 3rd Qtr
+            const phaseAngle = phaseValue * Math.PI * 2;
+            const sunDistance = 200;
+
+            const sunVector = new THREE.Vector3(
+                -Math.sin(phaseAngle) * sunDistance,
+                25,
+                Math.cos(phaseAngle) * sunDistance
+            );
+
+            moonLight.position.copy(moonMesh.position).add(sunVector);
+            moonLight.intensity = 2.8;
+
+            if (moonLight.target !== moonMesh) {
+                moonLight.target = moonMesh;
+                skyScene.add(moonLight.target);
             }
-            if (typeof lonSpan !== "undefined" && lonSpan.textContent && !isNaN(Number(lonSpan.textContent))) {
-                lon = Number(lonSpan.textContent);
+
+            // Adjust lunar halo glow opacity based on illumination percentage
+            if (window.moonGlowSprite && window.moonGlowSprite.material) {
+                const illumination = (currentMoonPositionData && typeof currentMoonPositionData.illumination === 'number')
+                    ? currentMoonPositionData.illumination
+                    : Math.sin(phaseValue * Math.PI);
+                window.moonGlowSprite.material.opacity = Math.max(0.12, illumination * 0.45);
             }
-            const now = new Date();
-            const sunPos = SunCalc.getPosition(now, lat, lon);
-            // Convert sun's azimuth/altitude to 3D coordinates (same as moon)
-            const sunAz = sunPos.azimuth; // radians, from south to west
-            const sunAlt = sunPos.altitude; // radians
-            const sunDist = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 2; // Place sun far away
-            // SunCalc azimuth: 0=south, +west, -east. Three.js: 0=z-, x right, y up
-            // We'll rotate so that azimuth=0 is z-, positive is x+
-            const azimuthRadThreeJS = (sunAz + Math.PI) % (2 * Math.PI);
-            const x = sunDist * Math.cos(sunAlt) * Math.sin(azimuthRadThreeJS);
-            const y = sunDist * Math.sin(sunAlt);
-            const z = sunDist * Math.cos(sunAlt) * -Math.cos(azimuthRadThreeJS);
-            moonLight.position.set(x, y, z);
-            moonLight.target.position.set(0, 1.7, -10); // Always point to ground center
-            skyScene.add(moonLight.target);
         }
 
         function animateSkyMap() {
@@ -2203,39 +2178,9 @@
             });
         }
 
-        // Update the 3D moon's material to match the current phase and make it bright
         function updateMoonMaterialForPhase(phaseValue) {
             if (!moonMesh) return;
-            // Pick the closest phase image
-            const phaseIdx = Math.round((phaseValue || 0) * (moonPhaseImages.length - 1));
-            const phaseImgUrl = moonPhaseImages[phaseIdx];
-
-            // Load the phase texture and bump
-            const texLoader = new THREE.TextureLoader();
-            texLoader.load(phaseImgUrl, (moonTexture) => {
-                texLoader.load("https://www.solarsystemscope.com/textures/download/2k_moon.jpg", (moonBump) => {
-                    // Bright, advanced material
-                    moonMesh.material = new THREE.MeshPhysicalMaterial({
-                        map: moonTexture,
-                        bumpMap: moonBump,
-                        bumpScale: 0.45,
-                        color: 0xffffff,
-                        roughness: 0.22,
-                        metalness: 0.08,
-                        clearcoat: 0.8,
-                        clearcoatRoughness: 0.13,
-                        reflectivity: 0.22,
-                        transmission: 0.0,
-                        emissive: 0xffffff,
-                        emissiveIntensity: 0.22,
-                        sheen: 1,
-                        sheenColor: new THREE.Color(0xeaf6ff),
-                        sheenRoughness: 0.18,
-                        sheenColorIntensity: 0.7
-                    });
-                    moonMesh.material.needsUpdate = true;
-                });
-            });
+            updateSunLightForScene();
         }
 
         // --- ICS Download Logic ---
