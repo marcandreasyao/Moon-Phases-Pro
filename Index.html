@@ -9,9 +9,9 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#22223b">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js" integrity="sha384-Ssj6wXFm/aTdsC1FeDLrGxP3/PooxBGcOqehkmt8CbKQOcei4CDaRbreAUvdFNrq" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" integrity="sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf" crossorigin="anonymous"></script>
 
     <!-- Apple Touch Startup Images and Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="lroc_color_poles_1k.jpg">
@@ -27,7 +27,15 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#22223b">
     <meta name="msapplication-TileImage" content="lroc_color_poles_1k.jpg">
-    <!-- Splash screens and maskable icons would be added here for production -->
+    <!-- Production Security & Compliance Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="permissions-policy" content="camera=(), microphone=(), geolocation=(self), payment=()">
+
+    <!-- Production Security Suite Engine -->
+    <script src="security-suite.js"></script>
 
     <style>
         /* Base styles & Font */
@@ -548,8 +556,17 @@
             Location: <span id="latitude"></span>°, <span id="longitude"></span>° (<span id="accuracy"></span>m accuracy)
         </div>
 
-        <!-- Apple-inspired Customize View Button -->
-        <div class="w-full flex justify-end mb-2">
+        <!-- Apple-inspired Top Action Buttons -->
+        <div class="w-full flex justify-end gap-2.5 mb-2">
+            <button id="security-suite-btn"
+                onclick="if (window.SecuritySuite) window.SecuritySuite.openPanel();"
+                class="rounded-full bg-[rgba(44,44,46,0.7)] backdrop-blur-lg border border-[rgba(255,255,255,0.18)] shadow-lg w-12 h-12 flex items-center justify-center transition-all duration-200 hover:bg-[rgba(60,60,67,0.85)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-400 group"
+                title="Security & Compliance Suite (Ctrl+Shift+S)"
+                style="box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1.5px 8px rgba(0,0,0,0.10);">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </button>
             <button id="customize-view-btn"
                 class="rounded-full bg-[rgba(44,44,46,0.7)] backdrop-blur-lg border border-[rgba(255,255,255,0.18)] shadow-lg w-12 h-12 flex items-center justify-center transition-all duration-200 hover:bg-[rgba(60,60,67,0.85)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 title="Customize Data View"

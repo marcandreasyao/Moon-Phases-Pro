@@ -1,10 +1,11 @@
-const CACHE_NAME = 'moon-phases-pro-v2.2';
+const CACHE_NAME = 'moon-phases-pro-v2.3';
 const OFFLINE_URL = 'offline.html';
 const urlsToCache = [
   '/',
   '/Index.html',
   '/manifest.json',
   '/install-prompt.js',
+  '/security-suite.js',
   '/lroc_color_poles_1k.jpg',
   '/ldem_3_8bit.jpg',
   '/eso0932a (splashcreen).jpg',
