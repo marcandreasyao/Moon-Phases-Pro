@@ -410,7 +410,7 @@
             </div>
 
             <div class="text-xs text-gray-500 text-center border-t border-zinc-800 pt-3">
-              Press <kbd class="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-gray-300">Ctrl + Shift + S</kbd> anywhere to toggle this panel.
+              Press <kbd class="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-gray-300">⌘ / Ctrl + Shift + S</kbd> anywhere to toggle this panel.
             </div>
           </div>
         </div>
@@ -443,9 +443,9 @@
         exportBtn.addEventListener('click', () => SecurityAuditLogger.exportLogsJSON());
       }
 
-      // Keyboard shortcut Ctrl + Shift + S
+      // Keyboard shortcut Cmd/Ctrl + Shift + S
       window.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
           e.preventDefault();
           this.togglePanel();
         }
