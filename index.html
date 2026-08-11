@@ -1375,23 +1375,26 @@
                 const skyMesh = new THREE.Mesh(skyGeo, skyMat);
                 skyScene.add(skyMesh);
 
-                // --- Camera: place at center of ground, at human eye height (~1.7m), looking forward ---
+                // --- Camera: place at center of ground, at human eye height (~1.7m), looking facing NORTH by default ---
                 const aspect = skyMapCanvasContainer.clientWidth / skyMapCanvasContainer.clientHeight;
                 skyCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
-                skyCamera.position.set(0, 1.7, 0); // Center of ground, 1.7m up
-                skyCamera.lookAt(0, 1.7, -10); // Look slightly forward (negative z)
+                skyCamera.position.set(0, 1.7, 0);
+                skyCamera.lookAt(0, 1.7, -50); // Facing North (negative Z) by default
 
                 skyRenderer = new THREE.WebGLRenderer({ canvas: skyMapCanvas, antialias: true, alpha: true });
                 skyRenderer.setSize(skyMapCanvasContainer.clientWidth, skyMapCanvasContainer.clientHeight);
                 skyRenderer.setPixelRatio(window.devicePixelRatio);
+                skyRenderer.outputEncoding = THREE.sRGBEncoding;
+                skyRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+                skyRenderer.toneMappingExposure = 0.92; // Non-glare balanced exposure
 
-                // Lighting: slightly brighter ambient and moonlight for better ground visibility
-                const ambientLight = new THREE.AmbientLight(0x222233, 1.1);
+                // Soft ambient earthshine light to prevent stark black/blown-out contrast
+                const ambientLight = new THREE.AmbientLight(0x121a2c, 0.35);
                 skyScene.add(ambientLight);
 
-                // --- Sunlight as DirectionalLight, will be updated in real-time ---
-                moonLight = new THREE.DirectionalLight(0xbfdfff, 0.7);
-                moonLight.position.set(0, 50, 80); // Initial, will be updated
+                // Directional Sunlight (intensity balanced to 1.15 to prevent overexposure)
+                moonLight = new THREE.DirectionalLight(0xfff6ea, 1.15);
+                moonLight.position.set(0, 50, -80);
                 skyScene.add(moonLight);
 
                 skyControls = new THREE.OrbitControls(skyCamera, skyRenderer.domElement);
@@ -1400,17 +1403,13 @@
                 skyControls.screenSpacePanning = false;
                 skyControls.minDistance = 2;
                 skyControls.maxDistance = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 2;
-                skyControls.target.set(0, 1.7, -10); // Match lookAt
+                skyControls.target.set(0, 1.7, -50); // Center facing North ("N") by default
                 skyControls.update();
 
-                // --- Realistic Ground Field (Grass Texture) ---
-                // Use a seamless grass texture (public domain)
-                const grassTextureUrl = "https://cdn.jsdelivr.net/gh/andreinitescu/public-assets@main/grass-seamless-1024.jpg";
-                const grassBumpUrl = "https://cdn.jsdelivr.net/gh/andreinitescu/public-assets@main/grass-bump-1024.jpg";
+                // --- Realistic Ground Field ---
                 const horizonRadius = VISUAL_MOON_DISTANCE_IN_SKY_MAP * 1.5;
                 const horizonGeometry = new THREE.CircleGeometry(horizonRadius, 64);
 
-                // Load textures synchronously for best appearance
                 const texLoader = new THREE.TextureLoader();
                 const baseTexture = texLoader.load("lroc_color_poles_1k.jpg");
                 baseTexture.wrapS = baseTexture.wrapT = THREE.RepeatWrapping;
@@ -1420,7 +1419,6 @@
                 overlayTexture.wrapS = overlayTexture.wrapT = THREE.RepeatWrapping;
                 overlayTexture.repeat.set(8, 8);
 
-                // Custom shader material to blend the two textures
                 const horizonMaterial = new THREE.ShaderMaterial({
                     uniforms: {
                         baseMap: { value: baseTexture },
@@ -1437,8 +1435,7 @@
                     fragmentShader: `
                         varying vec2 vUv;
                         void main() {
-                            // Make the ground a solid gray color
-                            gl_FragColor = vec4(0.65, 0.65, 0.65, 0.9); // light gray, 0.9 opacity
+                            gl_FragColor = vec4(0.65, 0.65, 0.65, 0.9);
                         }
                     `,
                     transparent: true,
@@ -1448,10 +1445,8 @@
                 horizonPlane.rotation.x = -Math.PI / 2;
                 horizonPlane.position.y = 0;
 
-                // Add N S E W labels
                 addCompassLabels(horizonRadius);
 
-                // Add a subtle ground shadow
                 const shadowGeo = new THREE.CircleGeometry(horizonRadius * 0.98, 64);
                 const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.18, transparent: true });
                 const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
@@ -1492,13 +1487,14 @@
                 const moonMaterial = new THREE.MeshStandardMaterial({
                     map: moonAlbedo,
                     bumpMap: moonBumpMap,
-                    bumpScale: 0.12,
-                    roughness: 0.82,
-                    metalness: 0.05,
-                    color: 0xffffff
+                    bumpScale: 0.08, // Subtle realistic crater relief
+                    roughness: 0.92, // Soft matte regolith texture
+                    metalness: 0.02,
+                    color: 0xcfd4dc // Authentic silver-gray regolith color
                 });
                 moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
-                moonMesh.rotation.y = Math.PI / 2; // Orient near-side face toward camera
+                // Near-side face (Mare Tranquillitatis, Oceanus Procellarum) sits at UV x=0.5 (local +Z).
+                // Pointing local +Z at camera naturally faces near-side to observer without extra rotateY offset.
                 skyScene.add(moonMesh);
 
                 // --- Ambient Glow Sprite behind Moon ---
@@ -1507,16 +1503,16 @@
                 glowCanvas.height = 128;
                 const gCtx = glowCanvas.getContext('2d');
                 const grad = gCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
-                grad.addColorStop(0, 'rgba(215, 235, 255, 0.8)');
-                grad.addColorStop(0.3, 'rgba(140, 190, 255, 0.25)');
+                grad.addColorStop(0, 'rgba(215, 235, 255, 0.4)');
+                grad.addColorStop(0.3, 'rgba(140, 190, 255, 0.15)');
                 grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
                 gCtx.fillStyle = grad;
                 gCtx.fillRect(0, 0, 128, 128);
 
                 const glowTex = new THREE.CanvasTexture(glowCanvas);
-                const glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending });
+                const glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending });
                 window.moonGlowSprite = new THREE.Sprite(glowMat);
-                window.moonGlowSprite.scale.set(7, 7, 1);
+                window.moonGlowSprite.scale.set(6, 6, 1);
                 skyScene.add(window.moonGlowSprite);
 
                 skyMapInitialized = true;
@@ -1847,6 +1843,11 @@
             await updateMoonInfo(true, selectedDate);
             setTimeout(() => {
                 initSkyMap();
+                if (skyCamera && skyControls) {
+                    skyCamera.position.set(0, 1.7, 0);
+                    skyControls.target.set(0, 1.7, -50); // Facing North ("N") by default
+                    skyControls.update();
+                }
                 onSkyMapResize();
                 updateSkyMapWithCurrentData();
                 if (!skyMapAnimationId) animateSkyMap();
