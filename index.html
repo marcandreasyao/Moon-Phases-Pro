@@ -753,25 +753,33 @@
             <!-- Mobile Drag Handle Pill -->
             <div class="sm:hidden w-12 h-1.5 bg-gray-500/35 rounded-full mx-auto mb-3 flex-shrink-0 cursor-grab"></div>
 
-            <!-- Header -->
-            <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/10 flex-shrink-0">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-400/30 text-blue-400 flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </svg>
+            <!-- Hero Header Container with Faded NASA Moon Texture Background -->
+            <div class="relative overflow-hidden rounded-2xl p-3.5 sm:p-4 mb-3 border border-white/10 shadow-lg flex-shrink-0 group">
+                <!-- Faded Moon Texture Image -->
+                <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen scale-110 pointer-events-none transition-all duration-700 group-hover:scale-105 group-hover:opacity-40" style="background-image: url('lroc_color_poles_1k.jpg'); filter: brightness(1.2) contrast(1.15);"></div>
+                <!-- Gradient Overlay Fading into Theme Background -->
+                <div class="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/70 to-zinc-950/40 pointer-events-none"></div>
+
+                <!-- Header Content -->
+                <div class="relative z-10 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/35 text-blue-300 flex items-center justify-center flex-shrink-0 shadow-lg backdrop-blur-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base sm:text-lg font-extrabold text-white leading-tight tracking-tight drop-shadow-md">Customize Dashboard</h3>
+                            <p class="text-xs text-blue-200/80 font-medium mt-0.5">Tailor visible lunar sections</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-base sm:text-lg font-bold text-gray-100 leading-tight">Customize Dashboard</h3>
-                        <p class="text-xs text-gray-400 mt-0.5">Tailor visible lunar sections</p>
+                    <div class="flex items-center gap-2">
+                        <span id="active-sections-count" class="text-[11px] sm:text-xs px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-200 font-semibold tracking-wide backdrop-blur-md shadow-sm">6 of 6 active</span>
+                        <button id="customize-modal-close" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition focus:outline-none backdrop-blur-md border border-white/10" title="Close">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span id="active-sections-count" class="text-[11px] sm:text-xs px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 font-semibold tracking-wide">6 of 6 active</span>
-                    <button id="customize-modal-close" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition focus:outline-none" title="Close">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
                 </div>
             </div>
 
