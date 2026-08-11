@@ -298,6 +298,9 @@
           justify-content: center;
           padding: 1rem;
         }
+        .sec-modal-backdrop.hidden, .sec-modal-backdrop[hidden] {
+          display: none !important;
+        }
 
         .sec-modal-card {
           background: rgba(24, 24, 27, 0.95);
