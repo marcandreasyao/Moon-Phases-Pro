@@ -1,8 +1,7 @@
 {
   "version": 2,
-  "framework": null,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/Index.html" }
+    { "source": "/", "destination": "/index.html" }
   ]
 }
