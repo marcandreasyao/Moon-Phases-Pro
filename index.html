@@ -1969,27 +1969,29 @@
                         <span id="sky-map-summary-vis" class="text-xs font-semibold text-emerald-300 shrink-0 ml-2">Visible</span>
                     </div>
 
-                    <!-- Collapsible Detailed Grid -->
-                    <div id="sky-map-details-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 pt-2.5 text-center transition-all duration-300">
-                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide">Altitude</span>
-                            <span id="sky-map-altitude" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
-                        </div>
-                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide">Azimuth</span>
-                            <span id="sky-map-azimuth" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
-                        </div>
-                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide">Direction</span>
-                            <span id="sky-map-direction" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
-                        </div>
-                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide">Distance</span>
-                            <span id="sky-map-distance" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
-                        </div>
-                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide">Visibility</span>
-                            <span id="sky-map-visibility" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
+                    <!-- Collapsible Detailed Unified Card with Rounded Borders -->
+                    <div id="sky-map-details-grid" class="mt-2 bg-white/[0.04] border border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-inner transition-all duration-300">
+                        <div class="grid grid-cols-5 divide-x divide-white/10 text-center">
+                            <div class="flex flex-col items-center px-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wide">Altitude</span>
+                                <span id="sky-map-altitude" class="text-xs sm:text-sm font-semibold text-blue-200 mt-0.5">–</span>
+                            </div>
+                            <div class="flex flex-col items-center px-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wide">Azimuth</span>
+                                <span id="sky-map-azimuth" class="text-xs sm:text-sm font-semibold text-blue-200 mt-0.5">–</span>
+                            </div>
+                            <div class="flex flex-col items-center px-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wide">Direction</span>
+                                <span id="sky-map-direction" class="text-xs sm:text-sm font-semibold text-blue-200 mt-0.5">–</span>
+                            </div>
+                            <div class="flex flex-col items-center px-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wide">Distance</span>
+                                <span id="sky-map-distance" class="text-xs sm:text-sm font-semibold text-blue-200 mt-0.5">–</span>
+                            </div>
+                            <div class="flex flex-col items-center px-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wide">Visibility</span>
+                                <span id="sky-map-visibility" class="text-xs sm:text-sm font-semibold text-blue-200 mt-0.5">–</span>
+                            </div>
                         </div>
                     </div>
 
@@ -3612,7 +3614,7 @@
             if (skyMapDistance) skyMapDistance.textContent = dist;
             if (skyMapVisibility) {
                 skyMapVisibility.textContent = visibilityStatus;
-                skyMapVisibility.className = altDeg > 0 ? "text-sm sm:text-base font-semibold text-emerald-300" : "text-sm sm:text-base font-semibold text-amber-300";
+                skyMapVisibility.className = altDeg > 0 ? "text-xs sm:text-sm font-semibold text-emerald-300 mt-0.5" : "text-xs sm:text-sm font-semibold text-amber-300 mt-0.5";
             }
 
             // Also update compact telemetry summary elements
