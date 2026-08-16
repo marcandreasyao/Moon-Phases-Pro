@@ -3242,29 +3242,30 @@
                     vec3 N_perturbed = normalize(N_geom - (dU * T + dV * B));
 
                     // 2. Albedo Sample (Contrast-tuned for crisp Maria and Highlands)
+                    // 2. Albedo Sample (Contrast-tuned for crisp Maria and Highlands)
                     vec4 albedoTex = texture2D(uAlbedoMap, vUv);
-                    vec3 albedo = pow(albedoTex.rgb, vec3(1.12));
+                    vec3 albedo = pow(albedoTex.rgb, vec3(1.15));
 
-                    // 3. Sunlight Photometric Model (Lunar-Lambert with Brilliant Sunlight Exposure)
+                    // 3. Sunlight Photometric Model (Lunar-Lambert with Balanced Sunlight Exposure)
                     vec3 L_sun = normalize(uSunDirection);
                     float NdotL_pert = max(dot(N_perturbed, L_sun), 0.0);
                     float NdotV = max(dot(N_geom, V), 0.001);
 
-                    // Sunlight diffuse with gentle power curve to preserve brilliance across the crescent
-                    float sunLightCurve = pow(NdotL_pert, 0.65);
-                    float lommelSeeliger = (2.0 * NdotL_pert) / (NdotL_pert + NdotV + 0.02);
-                    float lunarLambert = mix(sunLightCurve, lommelSeeliger, 0.40);
+                    // Sunlight diffuse with smooth power curve to retain crater maria and highland contrast
+                    float sunLightCurve = pow(NdotL_pert, 0.80);
+                    float lommelSeeliger = (2.0 * NdotL_pert) / (NdotL_pert + NdotV + 0.04);
+                    float lunarLambert = mix(sunLightCurve, lommelSeeliger, 0.35);
 
                     // Terminator micro-relief shadow & peak catching
                     float geomTerminator = dot(N_geom, L_sun) + (hC - 0.5) * uCraterRelief;
                     float sunTransition = smoothstep(-uTerminatorSmoothness, uTerminatorSmoothness, geomTerminator);
 
-                    // Brilliant direct sunlight on lunar surface
+                    // Balanced direct sunlight on lunar surface (crisp detail without blowout)
                     vec3 sunDiffuse = albedo * uSunColor * (lunarLambert * sunTransition * uSunIntensity);
 
-                    // Solar grazing limb boost for brilliant crescent highlights
-                    float sunLimbBoost = pow(1.0 - max(dot(N_geom, V), 0.0), 2.5) * max(dot(N_geom, L_sun), 0.0);
-                    vec3 sunTotal = sunDiffuse + (uSunColor * sunLimbBoost * uSunIntensity * sunTransition * 0.40);
+                    // Subtle solar grazing limb boost
+                    float sunLimbBoost = pow(1.0 - max(dot(N_geom, V), 0.0), 3.0) * max(dot(N_geom, L_sun), 0.0);
+                    vec3 sunTotal = sunDiffuse + (uSunColor * sunLimbBoost * uSunIntensity * sunTransition * 0.15);
 
                     // 4. Rich Celestial Earthshine (Night / Shadowed Side)
                     vec3 L_earth = normalize(uEarthshineDirection);
@@ -3298,7 +3299,7 @@
 
                 uSunDirection: { value: new THREE.Vector3(1, 0.2, 0).normalize() },
                 uSunColor: { value: new THREE.Color(0xfff8ea) },
-                uSunIntensity: { value: 5.2 },
+                uSunIntensity: { value: 2.2 },
 
                 uEarthshineDirection: { value: new THREE.Vector3(0, 0, 1).normalize() },
                 uEarthshineColor: { value: new THREE.Color(0x354e72) }, // Deep celestial slate-blue
@@ -3358,7 +3359,7 @@
                 const ambientLight = new THREE.AmbientLight(0x1a2638, 0.45);
                 skyScene.add(ambientLight);
 
-                moonLight = new THREE.DirectionalLight(0xfffaed, 4.2);
+                moonLight = new THREE.DirectionalLight(0xfffaed, 2.0);
                 moonLight.position.set(0, 50, 80);
                 skyScene.add(moonLight);
 
@@ -3690,7 +3691,7 @@
 
             if (moonLight) {
                 moonLight.position.copy(moonMesh.position).addScaledVector(sunDirection, sunDistance);
-                moonLight.intensity = 4.2;
+                moonLight.intensity = 2.0;
                 if (moonLight.target !== moonMesh) {
                     moonLight.target = moonMesh;
                     skyScene.add(moonLight.target);
@@ -3701,7 +3702,7 @@
                 const illumination = (currentMoonPositionData && typeof currentMoonPositionData.illumination === 'number')
                     ? currentMoonPositionData.illumination
                     : Math.sin(phaseValue * Math.PI);
-                window.moonGlowSprite.material.opacity = Math.max(0.15, illumination * 0.50);
+                window.moonGlowSprite.material.opacity = Math.max(0.08, illumination * 0.25);
             }
         }
 
