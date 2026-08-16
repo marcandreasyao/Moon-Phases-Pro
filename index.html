@@ -2858,11 +2858,11 @@
                     clearTimeout(loaderTimeout);
                 });
                 moonAlbedo.encoding = THREE.sRGBEncoding;
-                moonAlbedo.wrapS = THREE.ClampToEdgeWrapping;
+                moonAlbedo.wrapS = THREE.RepeatWrapping;
                 moonAlbedo.wrapT = THREE.ClampToEdgeWrapping;
 
                 const moonBumpMap = textureLoader.load('ldem_3_8bit.jpg');
-                moonBumpMap.wrapS = THREE.ClampToEdgeWrapping;
+                moonBumpMap.wrapS = THREE.RepeatWrapping;
                 moonBumpMap.wrapT = THREE.ClampToEdgeWrapping;
 
                 if (skyRenderer.capabilities) {
@@ -2876,7 +2876,7 @@
                     bumpTexture: moonBumpMap
                 });
                 moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
-                moonMesh.rotation.y = Math.PI / 2;
+                moonMesh.rotation.y = -Math.PI / 2;
                 skyScene.add(moonMesh);
 
                 moonLight.target = moonMesh;
@@ -3051,9 +3051,9 @@
             const z = VISUAL_MOON_DISTANCE_IN_SKY_MAP * Math.cos(altitudeRad) * -Math.cos(azimuthRadThreeJS);
             moonMesh.position.set(x, y, z);
 
-            // Orient moon mesh so near-side lunar surface (Mare Tranquillitatis, Tycho) faces observer
+            // Orient moon mesh so near-side lunar surface (Mare Crisium, Mare Tranquillitatis, Tycho) faces observer
             moonMesh.lookAt(skyCamera ? skyCamera.position : new THREE.Vector3(0, 1.7, 0));
-            moonMesh.rotateY(Math.PI / 2);
+            moonMesh.rotateY(-Math.PI / 2);
 
             // Center radial glow halo sprite on moon mesh
             if (window.moonGlowSprite) {
