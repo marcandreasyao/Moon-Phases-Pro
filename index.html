@@ -484,25 +484,76 @@
             color: #fff;
         }
 
+        /* --- Immersive Star Walk Sky Map Modal Styling --- */
+        #sky-map-modal {
+            padding: 0 !important;
+            margin: 0 !important;
+            z-index: 1000;
+        }
+
+        #sky-map-modal.modal-overlay {
+            background-color: rgba(0, 0, 0, 0.88);
+        }
+
+        #sky-map-modal .modal-content.sky-map-modal-card {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 100vw;
+            max-height: 100dvh;
+            border-radius: 0;
+            border: none;
+            padding: 0;
+            margin: 0;
+            background: #02040a;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(1);
+            box-shadow: none;
+        }
+
+        @media (min-width: 768px) {
+            #sky-map-modal:not(.is-fullscreen) .modal-content.sky-map-modal-card {
+                width: 94%;
+                max-width: 960px;
+                height: 86vh;
+                max-height: 740px;
+                border-radius: 28px;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                background: linear-gradient(160deg, rgba(16, 20, 32, 0.96) 0%, rgba(6, 9, 18, 0.98) 100%);
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            }
+            #sky-map-modal.is-fullscreen .modal-content.sky-map-modal-card {
+                width: 100vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                max-width: 100vw !important;
+                max-height: 100dvh !important;
+                border-radius: 0 !important;
+                border: none !important;
+            }
+        }
+
         #sky-map-canvas-container {
             width: 100%;
-            height: clamp(300px, 50vh, 450px);
-            /* Responsive height */
-            position: relative;
-            border-radius: 8px;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, #0b142e 0%, #02040a 100%);
             overflow: hidden;
-            background-color: #111;
-            /* Dark background for canvas */
+            touch-action: none;
+            z-index: 1;
         }
 
         #sky-map-canvas {
             display: block;
+            width: 100%;
+            height: 100%;
         }
 
-        /* Remove extra space below canvas */
-
         #sky-map-loader-container {
-            /* For loader inside canvas area */
             position: absolute;
             top: 0;
             left: 0;
@@ -511,14 +562,116 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 10;
-            border-radius: 8px;
-            /* Match canvas container */
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: 15;
         }
 
         #sky-map-loader-container.hidden {
             display: none;
+        }
+
+        /* Floating Top HUD */
+        .sky-map-top-hud {
+            position: absolute;
+            top: env(safe-area-inset-top, 14px);
+            left: 14px;
+            right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .sky-map-top-hud > * {
+            pointer-events: auto;
+        }
+
+        .sky-map-close-btn {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 22px;
+            line-height: 38px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sky-map-close-btn:hover {
+            background: rgba(239, 68, 68, 0.35);
+            border-color: rgba(239, 68, 68, 0.5);
+            transform: scale(1.06);
+        }
+
+        .sky-map-hud-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sky-map-hud-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: scale(1.06);
+        }
+
+        /* Horizon Warning Banner */
+        .sky-map-horizon-banner {
+            position: absolute;
+            top: calc(env(safe-area-inset-top, 14px) + 52px);
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.45rem 0.95rem;
+            border-radius: 9999px;
+            background: rgba(69, 26, 3, 0.90);
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            color: #fde68a;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 25;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* Floating Bottom HUD */
+        .sky-map-bottom-hud {
+            position: absolute;
+            bottom: env(safe-area-inset-bottom, 14px);
+            left: 12px;
+            right: 12px;
+            z-index: 30;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sky-map-bottom-hud > * {
+            pointer-events: auto;
+        }
+
+        #sky-map-details-grid.collapsed {
+            display: none !important;
         }
 
 
@@ -733,7 +886,7 @@
 
         /* Footer */
         footer {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: #8e8e93;
             margin-top: 2rem;
             text-align: center;
@@ -1092,7 +1245,7 @@
                 </svg>
                 <span id="location-name-text">Locating...</span>
                 <span
-                    class="text-[10px] text-gray-400 font-mono bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                    class="text-xs text-gray-400 font-mono bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
                     <span id="latitude">0.0000</span>°, <span id="longitude">0.0000</span>° (<span
                         id="accuracy">Auto</span>)
                 </span>
@@ -1257,7 +1410,7 @@
                             </h3>
                         </div>
                         <button type="button" id="nasa-svs-preview-btn"
-                            class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-[11px] font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 shadow-sm"
+                            class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-xs font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 shadow-sm"
                             title="Interactive NASA SVS Eclipse Visualizer & Contact Phases">
                             <svg class="w-3 h-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10" />
@@ -1273,10 +1426,10 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
                             <div>
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span id="featured-event-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 blood-moon-glow">
+                                    <span id="featured-event-badge" class="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 blood-moon-glow">
                                         TOTAL LUNAR ECLIPSE
                                     </span>
-                                    <span id="featured-event-mag" class="text-[11px] font-medium text-gray-400">
+                                    <span id="featured-event-mag" class="text-xs font-medium text-gray-400">
                                         Mag: 1.15 • Saros 133
                                     </span>
                                 </div>
@@ -1311,29 +1464,29 @@
 
                         <!-- Precision Live Countdown Ticker -->
                         <div class="pt-2 border-t border-white/10 flex items-center justify-between">
-                            <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
                                 Live Countdown
                             </span>
                             <div class="flex items-center gap-1 sm:gap-1.5 text-center" id="featured-countdown-grid">
                                 <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
                                     <div id="cnt-days" class="text-xs sm:text-sm font-bold text-white leading-none">-</div>
-                                    <div class="text-[8px] text-gray-400 uppercase font-medium">d</div>
+                                    <div class="text-xs text-gray-400 uppercase font-bold">d</div>
                                 </div>
                                 <span class="text-gray-500 font-bold text-xs">:</span>
                                 <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
                                     <div id="cnt-hours" class="text-xs sm:text-sm font-bold text-white leading-none">-</div>
-                                    <div class="text-[8px] text-gray-400 uppercase font-medium">h</div>
+                                    <div class="text-xs text-gray-400 uppercase font-bold">h</div>
                                 </div>
                                 <span class="text-gray-500 font-bold text-xs">:</span>
                                 <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
                                     <div id="cnt-mins" class="text-xs sm:text-sm font-bold text-white leading-none">-</div>
-                                    <div class="text-[8px] text-gray-400 uppercase font-medium">m</div>
+                                    <div class="text-xs text-gray-400 uppercase font-bold">m</div>
                                 </div>
                                 <span class="text-gray-500 font-bold text-xs">:</span>
                                 <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
                                     <div id="cnt-secs" class="text-xs sm:text-sm font-bold text-cyan-300 leading-none">-</div>
-                                    <div class="text-[8px] text-gray-400 uppercase font-medium">s</div>
+                                    <div class="text-xs text-gray-400 uppercase font-bold">s</div>
                                 </div>
                             </div>
                         </div>
@@ -1342,19 +1495,19 @@
 
                     <!-- Category Filter Segmented Tabs -->
                     <div class="flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-white/10 mb-3 overflow-x-auto no-scrollbar select-none">
-                        <button type="button" class="event-filter-btn active flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="all">
+                        <button type="button" class="event-filter-btn active flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="all">
                             All Events
                         </button>
-                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="lunar-eclipse">
+                        <button type="button" class="event-filter-btn flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="lunar-eclipse">
                             Lunar Eclipses
                         </button>
-                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="solar-eclipse">
+                        <button type="button" class="event-filter-btn flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="solar-eclipse">
                             Solar Eclipses
                         </button>
-                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="supermoon">
+                        <button type="button" class="event-filter-btn flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="supermoon">
                             Supermoons
                         </button>
-                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="conjunction">
+                        <button type="button" class="event-filter-btn flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="conjunction">
                             Conjunctions
                         </button>
                     </div>
@@ -1476,7 +1629,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span id="active-sections-count"
-                            class="text-[11px] sm:text-xs px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-200 font-semibold tracking-wide backdrop-blur-md shadow-sm">6
+                            class="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-200 font-semibold tracking-wide backdrop-blur-md shadow-sm">6
                             of 6 active</span>
                         <button id="customize-modal-close"
                             class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition focus:outline-none backdrop-blur-md border border-white/10"
@@ -1492,7 +1645,7 @@
 
             <!-- Quick Presets Bar -->
             <div class="mb-3 flex-shrink-0">
-                <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 px-0.5">Quick
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 px-0.5">Quick
                     Presets</div>
                 <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                     <button type="button" data-preset="all" class="preset-chip active">
@@ -1539,7 +1692,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Moon Visual</div>
-                            <div class="text-[11px] text-gray-400">Interactive 3D lunar sphere & phase illumination
+                            <div class="text-xs text-gray-400">Interactive 3D lunar sphere & phase illumination
                             </div>
                         </div>
                     </div>
@@ -1563,7 +1716,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Primary Details</div>
-                            <div class="text-[11px] text-gray-400">Moonrise, moonset, altitude & azimuth position</div>
+                            <div class="text-xs text-gray-400">Moonrise, moonset, altitude & azimuth position</div>
                         </div>
                     </div>
                     <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
@@ -1587,7 +1740,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Secondary Details</div>
-                            <div class="text-[11px] text-gray-400">Lunar distance, age in days & zodiac constellation
+                            <div class="text-xs text-gray-400">Lunar distance, age in days & zodiac constellation
                             </div>
                         </div>
                     </div>
@@ -1611,7 +1764,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Celestial Viewer & Tools</div>
-                            <div class="text-[11px] text-gray-400">3D Sky Map viewer & phase alert controls</div>
+                            <div class="text-xs text-gray-400">3D Sky Map viewer & phase alert controls</div>
                         </div>
                     </div>
                     <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
@@ -1634,7 +1787,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Upcoming Phases</div>
-                            <div class="text-[11px] text-gray-400">Estimated dates for New, Quarter & Full Moon</div>
+                            <div class="text-xs text-gray-400">Estimated dates for New, Quarter & Full Moon</div>
                         </div>
                     </div>
                     <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
@@ -1657,7 +1810,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Celestial Events & Eclipses</div>
-                            <div class="text-[11px] text-gray-400">Countdown ticker, Blood Moons & Supermoons</div>
+                            <div class="text-xs text-gray-400">Countdown ticker, Blood Moons & Supermoons</div>
                         </div>
                     </div>
                     <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
@@ -1682,7 +1835,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-semibold text-gray-100">Observation Date Picker</div>
-                            <div class="text-[11px] text-gray-400">Custom date selection bar & Today shortcut</div>
+                            <div class="text-xs text-gray-400">Custom date selection bar & Today shortcut</div>
                         </div>
                     </div>
                     <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
@@ -1714,78 +1867,135 @@
     </div>
 
     <div id="sky-map-modal" class="modal-overlay">
-        <div class="modal-content"
-            style="box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 1.5px 8px rgba(0,0,0,0.12); max-width: 960px; width: 96%;">
-            <button id="modal-close-button" class="modal-close-button">&times;</button>
-            <h3 class="text-lg font-semibold mb-3 text-center text-gray-100">Moon's Sky Position</h3>
-            <div id="sky-map-canvas-container" class="relative overflow-hidden rounded-2xl">
+        <div class="modal-content sky-map-modal-card">
+            <!-- 3D Canvas Background Layer (Full Viewport) -->
+            <div id="sky-map-canvas-container">
                 <canvas id="sky-map-canvas"></canvas>
                 <div id="sky-map-loader-container">
                     <div class="loader"></div>
                 </div>
-
-                <!-- Thoughtful Glassmorphic Top Horizon Alert (When Moon is Below Horizon) -->
-                <div id="sky-map-horizon-alert"
-                    class="absolute top-3 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-amber-950/85 border border-amber-400/40 text-amber-200 text-xs font-medium shadow-2xl backdrop-blur-lg flex items-center gap-2 transition-all duration-300 transform -translate-y-6 opacity-0 pointer-events-none z-20">
-                    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
-                        viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M12 8v4m0 4h.01" stroke-linecap="round" />
-                    </svg>
-                    <span id="sky-map-horizon-alert-text">The Moon is currently below your horizon</span>
-                </div>
-
-                <!-- Toggle Real-Time Gyroscope / Live Compass Button -->
-                <button id="sky-map-gyro-btn"
-                    class="absolute bottom-3 left-3 px-3.5 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800/90 text-white text-xs font-semibold tracking-wide border border-white/20 shadow-lg backdrop-blur-md flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none z-10"
-                    title="Toggle Live Sky Gyroscope & Compass Tracking">
-                    <svg id="sky-map-gyro-icon" class="w-4 h-4 text-cyan-400 transition-transform duration-300"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" fill-opacity="0.35" />
-                    </svg>
-                    <span id="sky-map-gyro-btn-text">Live Compass</span>
-                </button>
-
-                <!-- Toggle Focus Moon / Unfocus Moon Action Button -->
-                <button id="sky-map-focus-btn"
-                    class="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-full bg-blue-600/80 hover:bg-blue-500/90 text-white text-xs font-semibold tracking-wide border border-blue-400/40 shadow-lg backdrop-blur-md flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none z-10"
-                    title="Toggle Focus Moon / Reset Observer View">
-                    <svg id="sky-map-focus-icon" class="w-4 h-4 text-blue-200 transition-transform duration-300"
-                        fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="8" />
-                        <circle cx="12" cy="12" r="3" fill="currentColor" />
-                        <path d="M12 2v2m0 16v2M2 12h2m16 0h2" stroke-linecap="round" />
-                    </svg>
-                    <span id="sky-map-focus-btn-text">Focus Moon</span>
-                </button>
             </div>
-            <!-- Apple-inspired info panel below the canvas -->
-            <div id="sky-map-info-panel"
-                class="mt-4 flex flex-col md:flex-row items-center justify-center gap-4 bg-[rgba(28,28,30,0.7)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2 shadow-lg backdrop-blur-md transition-all duration-300">
-                <div class="flex flex-col items-center">
-                    <span class="text-xs text-gray-400 uppercase tracking-wide">Altitude</span>
-                    <span id="sky-map-altitude" class="text-base font-semibold text-blue-200">–</span>
+
+            <!-- Top Floating Header HUD -->
+            <div class="sky-map-top-hud">
+                <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-xl shadow-2xl">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-xs font-semibold text-white tracking-wide">Moon's Sky Position</span>
+                    <span class="text-xs text-blue-300/80 font-mono hidden sm:inline">• Live 3D Sky</span>
                 </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-xs text-gray-400 uppercase tracking-wide">Azimuth</span>
-                    <span id="sky-map-azimuth" class="text-base font-semibold text-blue-200">–</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-xs text-gray-400 uppercase tracking-wide">Direction</span>
-                    <span id="sky-map-direction" class="text-base font-semibold text-blue-200">–</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <span class="text-xs text-gray-400 uppercase tracking-wide">Distance</span>
-                    <span id="sky-map-distance" class="text-base font-semibold text-blue-200">–</span>
-                </div>
-                <!-- Visibility Status -->
-                <div class="flex flex-col items-center">
-                    <span class="text-xs text-gray-400 uppercase tracking-wide">Visibility</span>
-                    <span id="sky-map-visibility" class="text-base font-semibold text-blue-200">–</span>
+
+                <div class="flex items-center gap-2">
+                    <!-- Desktop/Tablet Fullscreen Expand Toggle -->
+                    <button id="sky-map-fullscreen-toggle" type="button" class="sky-map-hud-btn hidden md:flex items-center justify-center text-gray-300 hover:text-white" title="Toggle Fullscreen Canvas">
+                        <svg id="sky-map-fullscreen-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                    </button>
+                    <!-- Modal Close Button -->
+                    <button id="modal-close-button" class="sky-map-close-btn" aria-label="Close Sky Map">&times;</button>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-3 text-center">Use mouse/touch to navigate (orbit). Scroll to zoom.</p>
+
+            <!-- Horizon Warning Floating Banner -->
+            <div id="sky-map-horizon-alert"
+                class="sky-map-horizon-banner transform -translate-y-6 opacity-0 pointer-events-none transition-all duration-300">
+                <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v4m0 4h.01" stroke-linecap="round" />
+                </svg>
+                <span id="sky-map-horizon-alert-text" class="text-xs font-medium">The Moon is currently below your horizon</span>
+            </div>
+
+            <!-- Bottom Floating Stargazing Controls & Collapsible Telemetry HUD -->
+            <div class="sky-map-bottom-hud">
+                <!-- Floating Action Buttons Row -->
+                <div class="flex items-center justify-between w-full gap-2 mb-2">
+                    <!-- Left: Compass & Focus Buttons -->
+                    <div class="flex items-center gap-2">
+                        <!-- Toggle Real-Time Gyroscope / Live Compass Button -->
+                        <button id="sky-map-gyro-btn"
+                            class="px-3.5 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-800 text-white text-xs font-semibold tracking-wide border border-white/20 shadow-xl backdrop-blur-xl flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
+                            title="Toggle Live Sky Gyroscope & Compass Tracking">
+                            <svg id="sky-map-gyro-icon" class="w-4 h-4 text-cyan-400 transition-transform duration-300 shrink-0"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" fill-opacity="0.35" />
+                            </svg>
+                            <span id="sky-map-gyro-btn-text">Live Compass</span>
+                        </button>
+
+                        <!-- Toggle Focus Moon / Reset Observer View -->
+                        <button id="sky-map-focus-btn"
+                            class="px-3.5 py-1.5 rounded-full bg-blue-600/85 hover:bg-blue-500 text-white text-xs font-semibold tracking-wide border border-blue-400/40 shadow-xl backdrop-blur-xl flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
+                            title="Toggle Focus Moon / Reset Observer View">
+                            <svg id="sky-map-focus-icon" class="w-4 h-4 text-blue-200 transition-transform duration-300 shrink-0"
+                                fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="8" />
+                                <circle cx="12" cy="12" r="3" fill="currentColor" />
+                                <path d="M12 2v2m0 16v2M2 12h2m16 0h2" stroke-linecap="round" />
+                            </svg>
+                            <span id="sky-map-focus-btn-text">Focus Moon</span>
+                        </button>
+                    </div>
+
+                    <!-- Right: Telemetry Toggle Button -->
+                    <button id="sky-map-telemetry-toggle-btn" type="button"
+                        class="px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-gray-200 text-xs font-medium border border-white/15 shadow-xl backdrop-blur-xl flex items-center gap-1.5 transition-all duration-200 active:scale-95">
+                        <svg class="w-3.5 h-3.5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span id="sky-map-telemetry-toggle-text">Telemetry</span>
+                        <svg id="sky-map-telemetry-chevron" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 transform rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Collapsible VisionOS Glassmorphic Telemetry Card -->
+                <div id="sky-map-info-panel"
+                    class="w-full bg-slate-950/85 border border-white/15 rounded-2xl p-3 shadow-2xl backdrop-blur-2xl transition-all duration-300">
+                    
+                    <!-- Compact Summary Header (Always visible / click to toggle details) -->
+                    <div id="sky-map-summary-strip" class="flex items-center justify-between text-xs text-gray-300 cursor-pointer pb-1 md:pb-2 border-b border-white/10" title="Click to expand/collapse detailed telemetry">
+                        <div class="flex items-center gap-2 truncate">
+                            <div id="sky-map-summary-vis-dot" class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse"></div>
+                            <span class="font-semibold text-white">Live:</span>
+                            <span class="text-blue-200">Alt <span id="sky-map-summary-alt">--</span></span>
+                            <span class="text-gray-500">•</span>
+                            <span class="text-blue-200">Az <span id="sky-map-summary-az">--</span> (<span id="sky-map-summary-dir">--</span>)</span>
+                            <span class="text-gray-500 hidden sm:inline">•</span>
+                            <span class="text-gray-300 hidden sm:inline" id="sky-map-summary-dist">--</span>
+                        </div>
+                        <span id="sky-map-summary-vis" class="text-xs font-semibold text-emerald-300 shrink-0 ml-2">Visible</span>
+                    </div>
+
+                    <!-- Collapsible Detailed Grid -->
+                    <div id="sky-map-details-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 pt-2.5 text-center transition-all duration-300">
+                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 uppercase tracking-wide">Altitude</span>
+                            <span id="sky-map-altitude" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
+                        </div>
+                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 uppercase tracking-wide">Azimuth</span>
+                            <span id="sky-map-azimuth" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
+                        </div>
+                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 uppercase tracking-wide">Direction</span>
+                            <span id="sky-map-direction" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
+                        </div>
+                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 uppercase tracking-wide">Distance</span>
+                            <span id="sky-map-distance" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
+                        </div>
+                        <div class="flex flex-col items-center bg-white/[0.04] p-1.5 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400 uppercase tracking-wide">Visibility</span>
+                            <span id="sky-map-visibility" class="text-sm sm:text-base font-semibold text-blue-200">–</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-400 mt-2 text-center">Drag to look around • Scroll / pinch to zoom • Enable Live Compass for AR</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1805,7 +2015,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="text-lg font-semibold text-white tracking-wide">Lunar Alerts</h3>
-                            <span class="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full">Pro Engine</span>
+                            <span class="px-2 py-0.5 text-xs font-bold tracking-wider uppercase bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full">Pro Engine</span>
                         </div>
                         <p class="text-xs text-gray-400">Receive precise celestial event triggers & calendar syncs.</p>
                     </div>
@@ -1849,11 +2059,11 @@
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-100">Full Moon</div>
-                                <div class="text-[11px] text-gray-400">100% Peak Illumination & Supermoons</div>
+                                <div class="text-xs text-gray-400">100% Peak Illumination & Supermoons</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2.5">
-                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[11px] font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="fullMoon" title="Export .ics calendar event">
+                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="fullMoon" title="Export .ics calendar event">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                                 ICS
                             </button>
@@ -1893,11 +2103,11 @@
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-100">New Moon</div>
-                                <div class="text-[11px] text-gray-400">Dark Skies & Prime Astrophotography</div>
+                                <div class="text-xs text-gray-400">Dark Skies & Prime Astrophotography</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2.5">
-                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[11px] font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="newMoon" title="Export .ics calendar event">
+                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="newMoon" title="Export .ics calendar event">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                                 ICS
                             </button>
@@ -1930,11 +2140,11 @@
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-100">First Quarter</div>
-                                <div class="text-[11px] text-gray-400">Waxing 50% • High Crater Contrast</div>
+                                <div class="text-xs text-gray-400">Waxing 50% • High Crater Contrast</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2.5">
-                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[11px] font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="firstQuarter" title="Export .ics calendar event">
+                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="firstQuarter" title="Export .ics calendar event">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                                 ICS
                             </button>
@@ -1967,11 +2177,11 @@
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-100">Last Quarter</div>
-                                <div class="text-[11px] text-gray-400">Waning 50% • Crisp Dawn Viewing</div>
+                                <div class="text-xs text-gray-400">Waning 50% • Crisp Dawn Viewing</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2.5">
-                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[11px] font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="lastQuarter" title="Export .ics calendar event">
+                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 flex items-center gap-1.5" data-phase="lastQuarter" title="Export .ics calendar event">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                                 ICS
                             </button>
@@ -2005,11 +2215,11 @@
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-100">Solar & Lunar Eclipses</div>
-                                <div class="text-[11px] text-gray-400">Totality, Penumbral & Diamond Ring Events</div>
+                                <div class="text-xs text-gray-400">Totality, Penumbral & Diamond Ring Events</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2.5">
-                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-[11px] font-medium text-amber-300 hover:text-amber-200 transition active:scale-95 flex items-center gap-1.5" data-phase="eclipse" title="Export .ics calendar event">
+                            <button type="button" class="ics-download-btn px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-amber-300 hover:text-amber-200 transition active:scale-95 flex items-center gap-1.5" data-phase="eclipse" title="Export .ics calendar event">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                                 ICS
                             </button>
@@ -2026,10 +2236,10 @@
                             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
                             <div>
                                 <div class="font-semibold text-white" id="notif-eclipse-banner-title">Total Lunar Eclipse in 204d 14h</div>
-                                <div class="text-[11px] text-gray-300" id="notif-eclipse-banner-date">March 3, 2026 • Peak 11:34 UTC</div>
+                                <div class="text-xs text-gray-300" id="notif-eclipse-banner-date">March 3, 2026 • Peak 11:34 UTC</div>
                             </div>
                         </div>
-                        <button type="button" id="notif-eclipse-jump-btn" class="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-[11px] font-semibold text-white active:scale-95 transition whitespace-nowrap">
+                        <button type="button" id="notif-eclipse-jump-btn" class="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-xs font-semibold text-white active:scale-95 transition whitespace-nowrap">
                             Time Travel ↺
                         </button>
                     </div>
@@ -2071,7 +2281,7 @@
                     </div>
                     <div class="flex-1">
                         <p class="text-white font-semibold text-xs">Preferences Synchronized</p>
-                        <p class="text-emerald-100 text-[11px]">Astronomical background alarms scheduled.</p>
+                        <p class="text-emerald-100 text-xs">Astronomical background alarms scheduled.</p>
                     </div>
                 </div>
             </div>
@@ -2094,7 +2304,7 @@
                     </span>
                     <div>
                         <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">NASA SVS Eclipse Visualizer</h3>
-                        <p class="text-[11px] text-gray-400">Scientific Visualization Studio & Dial-A-Moon Simulation</p>
+                        <p class="text-xs text-gray-400">Scientific Visualization Studio & Dial-A-Moon Simulation</p>
                     </div>
                 </div>
                 <button type="button" id="nasa-svs-modal-close" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center transition border border-white/10 focus:outline-none" title="Close">
@@ -2106,12 +2316,12 @@
 
             <!-- Dynamic Eclipse Selected Header -->
             <div id="svs-eclipse-hero-display" class="relative rounded-2xl overflow-hidden bg-gradient-to-b from-slate-950 via-black to-slate-950 p-4 border border-white/10 mb-4 text-center shadow-inner">
-                <div class="text-[10px] font-bold tracking-wider uppercase text-red-400 mb-1" id="svs-modal-tag">NASA SVS 4K SIMULATION</div>
+                <div class="text-xs font-bold tracking-wider uppercase text-red-400 mb-1" id="svs-modal-tag">NASA SVS 4K SIMULATION</div>
                 <h4 class="text-base sm:text-lg font-bold text-white mb-0.5" id="svs-modal-title">Total Lunar Eclipse • Blood Moon</h4>
                 <p class="text-xs text-gray-300 mb-3" id="svs-modal-subtitle">Tuesday, March 3, 2026 • Peak Totality 11:34 UTC</p>
                 
                 <!-- Contact Timeline Visualizer -->
-                <div class="grid grid-cols-5 gap-1 text-[10px] text-gray-400 bg-white/[0.04] p-2.5 rounded-xl border border-white/5 mb-3.5">
+                <div class="grid grid-cols-5 gap-1 text-xs text-gray-400 bg-white/[0.04] p-2.5 rounded-xl border border-white/5 mb-3.5">
                     <div><span class="font-bold text-gray-200 block text-xs">P1</span> Penumbra Ingress</div>
                     <div><span class="font-bold text-amber-300 block text-xs">U1</span> Partial Umbra</div>
                     <div><span class="font-bold text-red-400 block text-xs">Max</span> Greatest Eclipse</div>
@@ -2136,7 +2346,7 @@
                         <span class="w-2 h-2 rounded-full bg-red-500"></span>
                         Blood Moon Rayleigh Scattering
                     </div>
-                    <p class="text-gray-400 text-[11px] leading-relaxed">
+                    <p class="text-gray-400 text-xs leading-relaxed">
                         During totality, direct sunlight is blocked by Earth. Sunlight refracted through Earth's atmosphere undergoes Rayleigh scattering ($\sigma \propto \lambda^{-4}$), projecting sunsets and sunrises across the globe onto the lunar regolith as a deep copper-red hue.
                     </p>
                 </div>
@@ -2145,7 +2355,7 @@
                         <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                         Global Visibility Path
                     </div>
-                    <p id="svs-visibility-text" class="text-gray-400 text-[11px] leading-relaxed">
+                    <p id="svs-visibility-text" class="text-gray-400 text-xs leading-relaxed">
                         Visible across Asia, Australia, the Pacific Basin, the Americas, and Western Europe.
                     </p>
                 </div>
@@ -2170,7 +2380,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-white tracking-tight leading-tight">Observer Location</h3>
-                        <p class="text-[11px] text-gray-400">Set coordinates for accurate lunar data</p>
+                        <p class="text-xs text-gray-400">Set coordinates for accurate lunar data</p>
                     </div>
                 </div>
                 <button id="location-picker-close"
@@ -2201,7 +2411,7 @@
                     </svg>
                 </button>
             </div>
-            <div id="city-search-feedback" class="text-[11px] mb-3 px-1 hidden"></div>
+            <div id="city-search-feedback" class="text-xs mb-3 px-1 hidden"></div>
 
             <!-- Fused Glass Segment Control for Auto-Detect -->
             <div class="p-1 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-1 mb-5">
@@ -2230,8 +2440,8 @@
             <!-- Pure City Chips (No Emojis!) -->
             <div>
                 <div class="flex items-center justify-between mb-2.5 px-1">
-                    <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Quick Presets</span>
-                    <span class="text-[10px] text-gray-500 font-mono">6 Global Hubs</span>
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Quick Presets</span>
+                    <span class="text-xs text-gray-500 font-mono">6 Global Hubs</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <button
@@ -3391,13 +3601,38 @@
             if (!currentMoonPositionData) return;
             const altDeg = (currentMoonPositionData.altitude * 180 / Math.PI);
             let azDeg = (currentMoonPositionData.azimuth * 180 / Math.PI + 180) % 360;
-            skyMapAltitude.textContent = altDeg.toFixed(1) + "°";
-            skyMapAzimuth.textContent = azDeg.toFixed(1) + "°";
-            skyMapDirection.textContent = azimuthToDirection(azDeg);
-            skyMapDistance.textContent = Math.round(currentMoonPositionData.distance).toLocaleString() + " km";
+            const dir = azimuthToDirection(azDeg);
+            const dist = Math.round(currentMoonPositionData.distance).toLocaleString() + " km";
             const visibilityStatus = altDeg > 0 ? "Visible now" : "Below horizon";
-            const skyMapVisibility = document.getElementById('sky-map-visibility');
-            if (skyMapVisibility) skyMapVisibility.textContent = visibilityStatus;
+
+            if (skyMapAltitude) skyMapAltitude.textContent = altDeg.toFixed(1) + "°";
+            if (skyMapAzimuth) skyMapAzimuth.textContent = azDeg.toFixed(1) + "°";
+            if (skyMapDirection) skyMapDirection.textContent = dir;
+            if (skyMapDistance) skyMapDistance.textContent = dist;
+            if (skyMapVisibility) {
+                skyMapVisibility.textContent = visibilityStatus;
+                skyMapVisibility.className = altDeg > 0 ? "text-sm sm:text-base font-semibold text-emerald-300" : "text-sm sm:text-base font-semibold text-amber-300";
+            }
+
+            // Also update compact telemetry summary elements
+            const summaryAlt = document.getElementById('sky-map-summary-alt');
+            const summaryAz = document.getElementById('sky-map-summary-az');
+            const summaryDir = document.getElementById('sky-map-summary-dir');
+            const summaryDist = document.getElementById('sky-map-summary-dist');
+            const summaryVis = document.getElementById('sky-map-summary-vis');
+            const summaryVisDot = document.getElementById('sky-map-summary-vis-dot');
+
+            if (summaryAlt) summaryAlt.textContent = altDeg.toFixed(1) + "°";
+            if (summaryAz) summaryAz.textContent = azDeg.toFixed(1) + "°";
+            if (summaryDir) summaryDir.textContent = dir;
+            if (summaryDist) summaryDist.textContent = dist;
+            if (summaryVis) {
+                summaryVis.textContent = visibilityStatus;
+                summaryVis.className = altDeg > 0 ? "text-xs font-semibold text-emerald-300 shrink-0 ml-2" : "text-xs font-semibold text-amber-300 shrink-0 ml-2";
+            }
+            if (summaryVisDot) {
+                summaryVisDot.className = altDeg > 0 ? "w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" : "w-2 h-2 rounded-full bg-amber-400 shrink-0";
+            }
         }
 
         function updateSkyMapWithCurrentData() {
@@ -3903,6 +4138,49 @@
             });
         }
 
+        // Telemetry Collapse / Expand Handler
+        const skyMapTelemetryToggleBtn = document.getElementById('sky-map-telemetry-toggle-btn');
+        const skyMapSummaryStrip = document.getElementById('sky-map-summary-strip');
+        const skyMapDetailsGrid = document.getElementById('sky-map-details-grid');
+        const skyMapTelemetryChevron = document.getElementById('sky-map-telemetry-chevron');
+
+        function toggleSkyMapTelemetry() {
+            if (!skyMapDetailsGrid) return;
+            const isCollapsed = skyMapDetailsGrid.classList.toggle('collapsed');
+            if (skyMapTelemetryChevron) {
+                if (isCollapsed) {
+                    skyMapTelemetryChevron.classList.remove('rotate-180');
+                } else {
+                    skyMapTelemetryChevron.classList.add('rotate-180');
+                }
+            }
+        }
+
+        if (skyMapTelemetryToggleBtn) {
+            skyMapTelemetryToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleSkyMapTelemetry();
+            });
+        }
+
+        if (skyMapSummaryStrip) {
+            skyMapSummaryStrip.addEventListener('click', () => {
+                toggleSkyMapTelemetry();
+            });
+        }
+
+        // Desktop Fullscreen Toggle
+        const skyMapFullscreenToggle = document.getElementById('sky-map-fullscreen-toggle');
+        if (skyMapFullscreenToggle) {
+            skyMapFullscreenToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                skyMapModal.classList.toggle('is-fullscreen');
+                setTimeout(() => {
+                    onSkyMapResize();
+                }, 100);
+            });
+        }
+
         skyMapButton.addEventListener('click', async () => {
             skyMapModal.classList.add('visible');
             document.body.style.overflow = 'hidden';
@@ -3913,6 +4191,15 @@
                 skyControls.disableGyroscope();
             }
             updateGyroButtonUI(false);
+
+            // On narrow mobile devices (< 640px), collapse telemetry details by default to offer maximum sky immersion
+            if (window.innerWidth < 640 && skyMapDetailsGrid) {
+                skyMapDetailsGrid.classList.add('collapsed');
+                if (skyMapTelemetryChevron) skyMapTelemetryChevron.classList.remove('rotate-180');
+            } else if (skyMapDetailsGrid) {
+                skyMapDetailsGrid.classList.remove('collapsed');
+                if (skyMapTelemetryChevron) skyMapTelemetryChevron.classList.add('rotate-180');
+            }
 
             const btnText = document.getElementById('sky-map-focus-btn-text');
             if (btnText) btnText.textContent = 'Focus Moon';
@@ -3931,7 +4218,7 @@
         });
 
         modalCloseButton.addEventListener('click', () => {
-            skyMapModal.classList.remove('visible');
+            skyMapModal.classList.remove('visible', 'is-fullscreen');
             document.body.style.overflow = '';
             hideHorizonAlert();
             isSkyMapFocusedOnMoon = false;
@@ -3951,6 +4238,13 @@
                 skyMapAnimationId = null;
             }
             window.removeEventListener('resize', onSkyMapResize);
+            window.removeEventListener('orientationchange', onSkyMapResize);
+        });
+
+        window.addEventListener('orientationchange', () => {
+            if (skyMapModal.classList.contains('visible')) {
+                setTimeout(onSkyMapResize, 200);
+            }
         });
 
         skyMapModal.addEventListener('click', (event) => {
@@ -4002,7 +4296,7 @@
             locBtnGps.addEventListener('click', async () => {
                 if (citySearchFeedback) {
                     citySearchFeedback.textContent = "Requesting GPS coordinates...";
-                    citySearchFeedback.className = "text-[11px] mt-1.5 text-blue-300 font-medium";
+                    citySearchFeedback.className = "text-xs mt-1.5 text-blue-300 font-medium";
                     citySearchFeedback.classList.remove('hidden');
                 }
                 try {
@@ -4012,7 +4306,7 @@
                 } catch (e) {
                     if (citySearchFeedback) {
                         citySearchFeedback.textContent = "GPS permission denied or timed out. Switched to Auto-IP Location.";
-                        citySearchFeedback.className = "text-[11px] mt-1.5 text-yellow-400 font-medium";
+                        citySearchFeedback.className = "text-xs mt-1.5 text-yellow-400 font-medium";
                     }
                     const ipLoc = await fetchIpLocation();
                     if (ipLoc) {
@@ -4027,7 +4321,7 @@
             locBtnIp.addEventListener('click', async () => {
                 if (citySearchFeedback) {
                     citySearchFeedback.textContent = "Fetching Auto-IP location...";
-                    citySearchFeedback.className = "text-[11px] mt-1.5 text-purple-300 font-medium";
+                    citySearchFeedback.className = "text-xs mt-1.5 text-purple-300 font-medium";
                     citySearchFeedback.classList.remove('hidden');
                 }
                 const loc = await fetchIpLocation();
@@ -4036,7 +4330,7 @@
                     updateMoonInfo(false, selectedDate);
                 } else if (citySearchFeedback) {
                     citySearchFeedback.textContent = "Could not fetch IP location. Please search city manually.";
-                    citySearchFeedback.className = "text-[11px] mt-1.5 text-red-400 font-medium";
+                    citySearchFeedback.className = "text-xs mt-1.5 text-red-400 font-medium";
                 }
             });
         }
@@ -4068,7 +4362,7 @@
 
             if (citySearchFeedback) {
                 citySearchFeedback.textContent = "Searching city...";
-                citySearchFeedback.className = "text-[11px] mt-1.5 text-blue-300 font-medium";
+                citySearchFeedback.className = "text-xs mt-1.5 text-blue-300 font-medium";
                 citySearchFeedback.classList.remove('hidden');
             }
 
@@ -4089,7 +4383,7 @@
 
             if (citySearchFeedback) {
                 citySearchFeedback.textContent = "City not found. Try entering Lat, Lon directly (e.g. 48.85, 2.35).";
-                citySearchFeedback.className = "text-[11px] mt-1.5 text-red-400 font-medium";
+                citySearchFeedback.className = "text-xs mt-1.5 text-red-400 font-medium";
             }
         }
 
@@ -4894,9 +5188,9 @@
                         <div class="min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-xs font-semibold text-white truncate">${ev.title}</span>
-                                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-medium ${ev.badgeClass}">${ev.type}</span>
+                                <span class="text-xs px-1.5 py-0.2 rounded-full font-medium ${ev.badgeClass}">${ev.type}</span>
                             </div>
-                            <div class="text-[11px] text-gray-400 mt-0.5 truncate">
+                            <div class="text-xs text-gray-400 mt-0.5 truncate">
                                 ${ev.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} • <span class="text-cyan-300 font-medium">${relativeText}</span>
                             </div>
                         </div>
@@ -4938,7 +5232,7 @@
 
             if (badgeEl) {
                 badgeEl.textContent = activeFeaturedEvent.badge;
-                badgeEl.className = `px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${activeFeaturedEvent.badgeClass}`;
+                badgeEl.className = `px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${activeFeaturedEvent.badgeClass}`;
             }
             if (magEl) {
                 magEl.textContent = `Mag: ${activeFeaturedEvent.magnitude} • ${activeFeaturedEvent.saros}`;
