@@ -666,6 +666,71 @@
             animation: fadeIn 0.25s ease-out forwards;
         }
 
+        /* --- Celestial Events & Eclipse Countdown Showcase Styles --- */
+        .celestial-showcase-card {
+            background: linear-gradient(135deg, rgba(28, 30, 44, 0.88) 0%, rgba(14, 16, 26, 0.94) 100%);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
+                0 16px 40px -8px rgba(0, 0, 0, 0.65),
+                0 0 24px -4px rgba(239, 68, 68, 0.12);
+            border-radius: 1.5rem;
+        }
+
+        .countdown-digit-box {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-radius: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+
+        .event-filter-btn.active {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.85) 0%, rgba(185, 28, 28, 0.85) 100%);
+            color: #FFFFFF;
+            border-color: rgba(252, 165, 165, 0.4);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+        }
+
+        .event-filter-btn.active-supermoon {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(37, 99, 235, 0.85) 100%);
+            color: #FFFFFF;
+            border-color: rgba(147, 197, 253, 0.4);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+        }
+
+        .event-filter-btn.active-solar {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.85) 0%, rgba(217, 119, 6, 0.85) 100%);
+            color: #FFFFFF;
+            border-color: rgba(253, 230, 138, 0.4);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+        }
+
+        .event-item-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 1rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .event-item-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+
+        @keyframes bloodMoonPulse {
+            0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.3), inset 0 0 12px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.4); }
+        }
+
+        .blood-moon-glow {
+            animation: bloodMoonPulse 3.5s ease-in-out infinite;
+        }
+
         /* Footer */
         footer {
             font-size: 0.7rem;
@@ -1168,6 +1233,140 @@
                 </ul>
             </div>
 
+            <!-- ========================================== -->
+            <!-- CELESTIAL EVENTS & ECLIPSE COUNTDOWN SHOWCASE -->
+            <!-- ========================================== -->
+            <div id="celestial-events-showcase" class="data-section mb-6" data-section="celestial-events">
+                <div class="celestial-showcase-card p-4 sm:p-5 rounded-3xl relative overflow-hidden">
+                    
+                    <!-- Ambient Eclipse / Atmospheric background glow -->
+                    <div id="showcase-ambient-glow" class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-red-600/15 blur-3xl pointer-events-none transition-all duration-700"></div>
+
+                    <!-- Header with Title and NASA SVS Badge -->
+                    <div class="flex items-center justify-between mb-3.5 relative z-10">
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center justify-center w-7 h-7 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" />
+                                    <path d="M12 3a9 9 0 0 1 0 18V3z" fill="currentColor" opacity="0.4" />
+                                    <circle cx="12" cy="12" r="3" fill="#ef4444" />
+                                </svg>
+                            </span>
+                            <h3 class="text-sm sm:text-base font-semibold text-gray-100 tracking-wide">
+                                Celestial Events & Eclipses
+                            </h3>
+                        </div>
+                        <button type="button" id="nasa-svs-preview-btn"
+                            class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-[11px] font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 shadow-sm"
+                            title="Interactive NASA SVS Eclipse Visualizer & Contact Phases">
+                            <svg class="w-3 h-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                            </svg>
+                            NASA SVS
+                        </button>
+                    </div>
+
+                    <!-- Featured Next Event Hero Card -->
+                    <div id="featured-event-hero" class="p-3.5 sm:p-4 rounded-2xl bg-black/35 border border-white/10 shadow-inner mb-3 relative overflow-hidden group">
+                        
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span id="featured-event-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 blood-moon-glow">
+                                        TOTAL LUNAR ECLIPSE
+                                    </span>
+                                    <span id="featured-event-mag" class="text-[11px] font-medium text-gray-400">
+                                        Mag: 1.15 • Saros 133
+                                    </span>
+                                </div>
+                                <h4 id="featured-event-title" class="text-base sm:text-lg font-bold text-white tracking-tight">
+                                    Total Lunar Eclipse (Blood Moon)
+                                </h4>
+                                <p id="featured-event-date-str" class="text-xs text-gray-300 mt-0.5">
+                                    Tuesday, March 3, 2026 • Peak 11:34 UTC
+                                </p>
+                            </div>
+
+                            <!-- Interactive Quick Action Buttons -->
+                            <div class="flex items-center gap-2 self-start sm:self-auto">
+                                <button type="button" id="hero-time-travel-btn"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md active:scale-95 transition border border-blue-400/40"
+                                    title="Time travel to view Moon during this event">
+                                    <span>Time Travel</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                                <button type="button" id="hero-ics-btn"
+                                    class="p-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-amber-300 hover:text-amber-200 border border-white/10 active:scale-95 transition"
+                                    title="Export event to Calendar (.ics)">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                                        <path d="M16 2v4M8 2v4M3 10h18" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Precision Live Countdown Ticker -->
+                        <div class="pt-2 border-t border-white/10 flex items-center justify-between">
+                            <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                                Live Countdown
+                            </span>
+                            <div class="flex items-center gap-1 sm:gap-1.5 text-center" id="featured-countdown-grid">
+                                <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
+                                    <div id="cnt-days" class="text-xs sm:text-sm font-bold text-white leading-none">-</div>
+                                    <div class="text-[8px] text-gray-400 uppercase font-medium">d</div>
+                                </div>
+                                <span class="text-gray-500 font-bold text-xs">:</span>
+                                <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
+                                    <div id="cnt-hours" class="text-xs sm:text-sm font-bold text-white leading-none">-</div>
+                                    <div class="text-[8px] text-gray-400 uppercase font-medium">h</div>
+                                </div>
+                                <span class="text-gray-500 font-bold text-xs">:</span>
+                                <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
+                                    <div id="cnt-mins" class="text-xs sm:text-sm font-bold text-white leading-none">-</div>
+                                    <div class="text-[8px] text-gray-400 uppercase font-medium">m</div>
+                                </div>
+                                <span class="text-gray-500 font-bold text-xs">:</span>
+                                <div class="countdown-digit-box px-2 py-1 min-w-[34px]">
+                                    <div id="cnt-secs" class="text-xs sm:text-sm font-bold text-cyan-300 leading-none">-</div>
+                                    <div class="text-[8px] text-gray-400 uppercase font-medium">s</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Category Filter Segmented Tabs -->
+                    <div class="flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-white/10 mb-3 overflow-x-auto no-scrollbar select-none">
+                        <button type="button" class="event-filter-btn active flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="all">
+                            All Events
+                        </button>
+                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="lunar-eclipse">
+                            Lunar Eclipses
+                        </button>
+                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="solar-eclipse">
+                            Solar Eclipses
+                        </button>
+                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="supermoon">
+                            Supermoons
+                        </button>
+                        <button type="button" class="event-filter-btn flex-1 py-1 px-2.5 rounded-lg text-[11px] font-semibold text-gray-300 transition whitespace-nowrap text-center" data-category="conjunction">
+                            Conjunctions
+                        </button>
+                    </div>
+
+                    <!-- Upcoming Events List Container -->
+                    <div id="celestial-events-list" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-0.5 custom-scrollbar">
+                        <!-- Dynamic event items rendered by JavaScript -->
+                    </div>
+
+                </div>
+            </div>
+
             <!-- Next-Gen Celestial Date Selector (Lunar Time Machine Bar) -->
             <div class="flex justify-center mb-6" data-section="date-picker">
                 <div class="celestial-date-bar flex items-center gap-1 sm:gap-2 p-1.5 rounded-full bg-[rgba(26,28,36,0.92)] border border-white/15 shadow-[0_12px_36px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-2xl transition-all duration-200">
@@ -1446,7 +1645,30 @@
                     </label>
                 </div>
 
-                <!-- 6. Date Picker -->
+                <!-- 6. Celestial Events & Eclipses -->
+                <div class="sec-card-row">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-white text-[#ef4444] flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9" />
+                                <circle cx="12" cy="12" r="3" fill="#ef4444" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-gray-100">Celestial Events & Eclipses</div>
+                            <div class="text-[11px] text-gray-400">Countdown ticker, Blood Moons & Supermoons</div>
+                        </div>
+                    </div>
+                    <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
+                        <input type="checkbox" data-section="celestial-events" class="sr-only peer" checked>
+                        <div class="ios-switch-track">
+                            <div class="ios-switch-thumb"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- 7. Date Picker -->
                 <div class="sec-card-row">
                     <div class="flex items-center gap-3">
                         <div
@@ -1798,6 +2020,20 @@
                         </div>
                     </div>
 
+                    <!-- Dynamic Live Eclipse Countdown Banner (Reveals when Eclipse toggle is ON) -->
+                    <div id="notification-eclipse-countdown-banner" class="hidden p-3 rounded-2xl bg-gradient-to-r from-red-950/40 via-amber-950/30 to-red-950/40 border border-red-500/30 text-xs text-red-200 shadow-md backdrop-blur-md items-center justify-between gap-2 animate-fadeIn">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+                            <div>
+                                <div class="font-semibold text-white" id="notif-eclipse-banner-title">Total Lunar Eclipse in 204d 14h</div>
+                                <div class="text-[11px] text-gray-300" id="notif-eclipse-banner-date">March 3, 2026 • Peak 11:34 UTC</div>
+                            </div>
+                        </div>
+                        <button type="button" id="notif-eclipse-jump-btn" class="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-[11px] font-semibold text-white active:scale-95 transition whitespace-nowrap">
+                            Time Travel ↺
+                        </button>
+                    </div>
+
                 </div>
 
                 <!-- Segmented Day-Before Reminder Control -->
@@ -1841,6 +2077,79 @@
             </div>
 
             <div id="notification-permission-message" class="text-xs text-center mt-2 text-yellow-300 hidden"></div>
+        </div>
+    </div>
+
+    <!-- Interactive NASA SVS Eclipse Visualizer & Contact Phases Modal -->
+    <div id="nasa-svs-eclipse-modal" class="modal-overlay">
+        <div class="modal-content max-w-lg w-[92%] p-5 sm:p-6 overflow-y-auto max-h-[90vh]" style="border-radius: 28px; background: linear-gradient(165deg, rgba(28, 30, 42, 0.92) 0%, rgba(14, 16, 24, 0.96) 100%); backdrop-filter: blur(40px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.18);">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 shadow-inner flex-shrink-0">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 2a10 10 0 0 0 0 20V2z" fill="#ef4444" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">NASA SVS Eclipse Visualizer</h3>
+                        <p class="text-[11px] text-gray-400">Scientific Visualization Studio & Dial-A-Moon Simulation</p>
+                    </div>
+                </div>
+                <button type="button" id="nasa-svs-modal-close" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center transition border border-white/10 focus:outline-none" title="Close">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Dynamic Eclipse Selected Header -->
+            <div id="svs-eclipse-hero-display" class="relative rounded-2xl overflow-hidden bg-gradient-to-b from-slate-950 via-black to-slate-950 p-4 border border-white/10 mb-4 text-center shadow-inner">
+                <div class="text-[10px] font-bold tracking-wider uppercase text-red-400 mb-1" id="svs-modal-tag">NASA SVS 4K SIMULATION</div>
+                <h4 class="text-base sm:text-lg font-bold text-white mb-0.5" id="svs-modal-title">Total Lunar Eclipse • Blood Moon</h4>
+                <p class="text-xs text-gray-300 mb-3" id="svs-modal-subtitle">Tuesday, March 3, 2026 • Peak Totality 11:34 UTC</p>
+                
+                <!-- Contact Timeline Visualizer -->
+                <div class="grid grid-cols-5 gap-1 text-[10px] text-gray-400 bg-white/[0.04] p-2.5 rounded-xl border border-white/5 mb-3.5">
+                    <div><span class="font-bold text-gray-200 block text-xs">P1</span> Penumbra Ingress</div>
+                    <div><span class="font-bold text-amber-300 block text-xs">U1</span> Partial Umbra</div>
+                    <div><span class="font-bold text-red-400 block text-xs">Max</span> Greatest Eclipse</div>
+                    <div><span class="font-bold text-amber-300 block text-xs">U4</span> Partial Egress</div>
+                    <div><span class="font-bold text-gray-200 block text-xs">P4</span> Penumbra Egress</div>
+                </div>
+
+                <div class="flex items-center justify-center gap-2">
+                    <button type="button" id="svs-time-travel-btn" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-amber-600 to-red-600 hover:from-red-500 hover:to-amber-500 text-white text-xs font-semibold shadow-lg active:scale-95 transition flex items-center gap-2 border border-red-400/40">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Simulate Eclipse in Time Machine</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Eclipse Physics & Visibility Details -->
+            <div class="space-y-2.5 text-xs text-gray-300">
+                <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5">
+                    <div class="font-semibold text-gray-200 mb-1 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        Blood Moon Rayleigh Scattering
+                    </div>
+                    <p class="text-gray-400 text-[11px] leading-relaxed">
+                        During totality, direct sunlight is blocked by Earth. Sunlight refracted through Earth's atmosphere undergoes Rayleigh scattering ($\sigma \propto \lambda^{-4}$), projecting sunsets and sunrises across the globe onto the lunar regolith as a deep copper-red hue.
+                    </p>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5">
+                    <div class="font-semibold text-gray-200 mb-1 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                        Global Visibility Path
+                    </div>
+                    <p id="svs-visibility-text" class="text-gray-400 text-[11px] leading-relaxed">
+                        Visible across Asia, Australia, the Pacific Basin, the Americas, and Western Europe.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2082,10 +2391,22 @@
         // Improved moon visual update with local preloading and seamless transition
         async function updateMoonVisualWithNasa(date) {
             if (!moonImageDiv) return;
+            const now = date || new Date();
             // Save current background image (if any)
             const prevBg = moonImageDiv.style.backgroundImage;
             let loadingTimeout = null;
             let imageSet = false;
+
+            // Check if active date is during a Total / Partial Lunar Eclipse
+            const eclipseEvent = typeof CELESTIAL_EVENTS !== 'undefined' ? CELESTIAL_EVENTS.find(ev => {
+                return ev.category === 'lunar-eclipse' && Math.abs(ev.date.getTime() - now.getTime()) <= (6 * 3600 * 1000);
+            }) : null;
+
+            if (eclipseEvent && eclipseEvent.isTotality) {
+                moonImageDiv.style.filter = "drop-shadow(0 0 35px rgba(239, 68, 68, 0.65)) brightness(0.92) contrast(1.15) sepia(0.35) saturate(1.9) hue-rotate(335deg)";
+            } else {
+                moonImageDiv.style.filter = "";
+            }
 
             // Preload new image
             const url = await fetchNasaDialAMoonImageUrl(date);
@@ -2098,7 +2419,6 @@
                 img.onerror = () => {
                     imageSet = true;
                     // fallback to phase image
-                    const now = date || new Date();
                     const moonIllumination = SunCalc.getMoonIllumination(now);
                     const moonAge = moonIllumination.phase * LUNAR_CYCLE_DAYS;
                     updateMoonVisual(moonAge);
@@ -2113,7 +2433,6 @@
                 }, 120);
             } else {
                 // fallback to phase image
-                const now = date || new Date();
                 const moonIllumination = SunCalc.getMoonIllumination(now);
                 const moonAge = moonIllumination.phase * LUNAR_CYCLE_DAYS;
                 updateMoonVisual(moonAge);
@@ -3346,7 +3665,20 @@
                 phase: moonIlluminationData.phase
             };
 
-            phaseNameSpan.textContent = getPhaseName(moonIlluminationData.phase);
+            let calculatedPhaseName = getPhaseName(moonIlluminationData.phase);
+            if (typeof CELESTIAL_EVENTS !== 'undefined') {
+                const eventMatch = CELESTIAL_EVENTS.find(ev => {
+                    return Math.abs(ev.date.getTime() - now.getTime()) <= (12 * 3600 * 1000);
+                });
+                if (eventMatch) {
+                    if (eventMatch.isTotality) {
+                        calculatedPhaseName = `${calculatedPhaseName} • Blood Moon`;
+                    } else if (eventMatch.category === 'supermoon') {
+                        calculatedPhaseName = `${calculatedPhaseName} • Supermoon`;
+                    }
+                }
+            }
+            phaseNameSpan.textContent = calculatedPhaseName;
             const currentAnimationDuration = isAutoRefresh ? ANIMATION_DURATION / 2 : ANIMATION_DURATION;
             animateCountUp(illuminationValueSpan, moonIlluminationData.fraction * 100, currentAnimationDuration, 1);
             const moonAge = moonIlluminationData.phase * LUNAR_CYCLE_DAYS;
@@ -3787,14 +4119,15 @@
             { key: "secondary-details", default: true },
             { key: "celestial-viewer", default: true },
             { key: "upcoming-phases", default: true },
+            { key: "celestial-events", default: true },
             { key: "date-picker", default: true }
         ];
 
         const PRESETS = {
-            all: ["moon-visual", "primary-details", "secondary-details", "celestial-viewer", "upcoming-phases", "date-picker"],
+            all: ["moon-visual", "primary-details", "secondary-details", "celestial-viewer", "upcoming-phases", "celestial-events", "date-picker"],
             essential: ["moon-visual", "primary-details"],
-            observer: ["moon-visual", "primary-details", "celestial-viewer"],
-            photo: ["moon-visual", "primary-details", "upcoming-phases"]
+            observer: ["moon-visual", "primary-details", "celestial-viewer", "celestial-events"],
+            photo: ["moon-visual", "primary-details", "upcoming-phases", "celestial-events"]
         };
 
         function getSectionVisibility() {
@@ -4178,6 +4511,567 @@
             ].join("\r\n");
         }
 
+        // =========================================================================
+        // ASTRONOMICAL CELESTIAL EVENTS & ECLIPSE COUNTDOWN ENGINE (2025-2030)
+        // NASA SVS & Dial-A-Moon Simulation, Real-time Countdown & Time Machine Hooks
+        // =========================================================================
+        const CELESTIAL_EVENTS = [
+            // --- Lunar Eclipses ---
+            {
+                id: "le-2025-03-14",
+                category: "lunar-eclipse",
+                title: "Total Lunar Eclipse (Blood Moon)",
+                date: new Date("2025-03-14T06:59:56Z"),
+                endDate: new Date("2025-03-14T10:25:00Z"),
+                type: "Total Lunar Eclipse",
+                badge: "TOTAL LUNAR ECLIPSE",
+                badgeClass: "bg-red-500/20 text-red-300 border-red-500/40 blood-moon-glow",
+                magnitude: "1.18",
+                saros: "123",
+                duration: "65m Totality",
+                visibility: "Americas, Pacific, Western Europe & West Africa",
+                description: "Spectacular Total Lunar Eclipse with deep copper-red Blood Moon totality lasting 65 minutes.",
+                isTotality: true,
+                isEclipse: true
+            },
+            {
+                id: "le-2025-09-07",
+                category: "lunar-eclipse",
+                title: "Total Lunar Eclipse (Blood Moon)",
+                date: new Date("2025-09-07T18:12:58Z"),
+                endDate: new Date("2025-09-07T21:40:00Z"),
+                type: "Total Lunar Eclipse",
+                badge: "TOTAL LUNAR ECLIPSE",
+                badgeClass: "bg-red-500/20 text-red-300 border-red-500/40 blood-moon-glow",
+                magnitude: "1.36",
+                saros: "128",
+                duration: "82m Totality",
+                visibility: "Europe, Africa, Asia, Australia, Indian Ocean",
+                description: "Long-duration Total Lunar Eclipse with 82 minutes of deep totality.",
+                isTotality: true,
+                isEclipse: true
+            },
+            {
+                id: "le-2026-03-03",
+                category: "lunar-eclipse",
+                title: "Total Lunar Eclipse (Blood Moon)",
+                date: new Date("2026-03-03T11:34:52Z"),
+                endDate: new Date("2026-03-03T14:55:00Z"),
+                type: "Total Lunar Eclipse",
+                badge: "TOTAL LUNAR ECLIPSE",
+                badgeClass: "bg-red-500/20 text-red-300 border-red-500/40 blood-moon-glow",
+                magnitude: "1.15",
+                saros: "133",
+                duration: "58m Totality",
+                visibility: "Asia, Australia, Pacific, Americas",
+                description: "Prime Total Lunar Eclipse observable across the Pacific Rim, Americas, and Eastern Asia.",
+                isTotality: true,
+                isEclipse: true
+            },
+            {
+                id: "le-2026-08-28",
+                category: "lunar-eclipse",
+                title: "Partial Lunar Eclipse",
+                date: new Date("2026-08-28T04:14:04Z"),
+                endDate: new Date("2026-08-28T07:30:00Z"),
+                type: "Partial Lunar Eclipse",
+                badge: "PARTIAL LUNAR ECLIPSE",
+                badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+                magnitude: "0.93",
+                saros: "138",
+                duration: "198m Partial",
+                visibility: "Americas, Europe, Africa, Atlantic, Pacific",
+                description: "Deep 93% partial lunar eclipse with dramatic umbral shading across the lunar south.",
+                isTotality: false,
+                isEclipse: true
+            },
+            {
+                id: "le-2028-12-31",
+                category: "lunar-eclipse",
+                title: "New Year's Eve Total Lunar Eclipse",
+                date: new Date("2028-12-31T16:53:16Z"),
+                endDate: new Date("2028-12-31T20:20:00Z"),
+                type: "Total Lunar Eclipse",
+                badge: "BLUE BLOOD MOON",
+                badgeClass: "bg-purple-500/20 text-purple-300 border-purple-500/40 blood-moon-glow",
+                magnitude: "1.25",
+                saros: "125",
+                duration: "71m Totality",
+                visibility: "Asia, Australia, Pacific, Western North America, Europe",
+                description: "Rare New Year's Eve Total Lunar Eclipse occurring on the second Full Moon of December.",
+                isTotality: true,
+                isEclipse: true
+            },
+            {
+                id: "le-2029-06-26",
+                category: "lunar-eclipse",
+                title: "Century Peak Total Lunar Eclipse",
+                date: new Date("2029-06-26T03:23:22Z"),
+                endDate: new Date("2029-06-26T07:00:00Z"),
+                type: "Total Lunar Eclipse",
+                badge: "PEAK TOTALITY (102m)",
+                badgeClass: "bg-red-500/20 text-red-300 border-red-500/40 blood-moon-glow",
+                magnitude: "1.84",
+                saros: "130",
+                duration: "102m Totality",
+                visibility: "Americas, Atlantic, Europe, Africa",
+                description: "Ultra-deep Total Lunar Eclipse passing dead-center through Earth's umbral core.",
+                isTotality: true,
+                isEclipse: true
+            },
+            // --- Solar Eclipses ---
+            {
+                id: "se-2026-02-17",
+                category: "solar-eclipse",
+                title: "Annular Solar Eclipse (Ring of Fire)",
+                date: new Date("2026-02-17T12:13:06Z"),
+                endDate: new Date("2026-02-17T14:30:00Z"),
+                type: "Annular Solar Eclipse",
+                badge: "RING OF FIRE",
+                badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+                magnitude: "0.96",
+                saros: "121",
+                duration: "2m 20s",
+                visibility: "Antarctica, South Atlantic",
+                description: "Dramatic Ring of Fire solar eclipse path sweeping over the Antarctic ice sheet.",
+                isTotality: false,
+                isEclipse: true
+            },
+            {
+                id: "se-2026-08-12",
+                category: "solar-eclipse",
+                title: "Total Solar Eclipse",
+                date: new Date("2026-08-12T17:47:06Z"),
+                endDate: new Date("2026-08-12T19:30:00Z"),
+                type: "Total Solar Eclipse",
+                badge: "TOTAL SOLAR ECLIPSE",
+                badgeClass: "bg-orange-500/20 text-orange-300 border-orange-500/40",
+                magnitude: "1.04",
+                saros: "126",
+                duration: "2m 18s",
+                visibility: "Greenland, Iceland, Northern Spain (A Coruña, Bilbao, Palma)",
+                description: "The Great European Total Solar Eclipse crossing Iceland and Spanish sunset skies.",
+                isTotality: true,
+                isEclipse: true
+            },
+            {
+                id: "se-2027-08-02",
+                category: "solar-eclipse",
+                title: "The Great North African Total Solar Eclipse",
+                date: new Date("2027-08-02T10:07:50Z"),
+                endDate: new Date("2027-08-02T12:45:00Z"),
+                type: "Total Solar Eclipse",
+                badge: "MAX TOTALITY (6m 23s)",
+                badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+                magnitude: "1.08",
+                saros: "136",
+                duration: "6m 23s",
+                visibility: "Southern Spain, Morocco, Algeria, Tunisia, Libya, Egypt (Luxor), Saudi Arabia",
+                description: "One of the longest total solar eclipses of the 21st century with over 6 minutes of totality.",
+                isTotality: true,
+                isEclipse: true
+            },
+            // --- Supermoons ---
+            {
+                id: "sm-2025-11-05",
+                category: "supermoon",
+                title: "Closest Supermoon of 2025 (Beaver Moon)",
+                date: new Date("2025-11-05T13:19:00Z"),
+                endDate: new Date("2025-11-06T06:00:00Z"),
+                type: "Perigee Supermoon",
+                badge: "PERIGEE SUPERMOON",
+                badgeClass: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+                magnitude: "+14% Size",
+                saros: "Perigee 356,980 km",
+                duration: "Full Perigee Disk",
+                visibility: "Global Night Sky",
+                description: "Closest Full Moon of 2025 at 356,980 km with peak brightness boost (+30%).",
+                isTotality: false,
+                isEclipse: false
+            },
+            {
+                id: "sm-2026-12-24",
+                category: "supermoon",
+                title: "Christmas Eve Supermoon",
+                date: new Date("2026-12-24T01:28:00Z"),
+                endDate: new Date("2026-12-24T18:00:00Z"),
+                type: "Perigee Supermoon",
+                badge: "CHRISTMAS SUPERMOON",
+                badgeClass: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+                magnitude: "+14.2% Size",
+                saros: "Perigee 356,740 km",
+                duration: "Full Perigee Disk",
+                visibility: "Global Night Sky",
+                description: "Closest and largest Supermoon of 2026 illuminating Christmas Eve at 356,740 km.",
+                isTotality: false,
+                isEclipse: false
+            },
+            {
+                id: "sm-2028-02-10",
+                category: "supermoon",
+                title: "Mega Snow Supermoon of 2028",
+                date: new Date("2028-02-10T15:00:00Z"),
+                endDate: new Date("2028-02-11T08:00:00Z"),
+                type: "Perigee Supermoon",
+                badge: "PERIGEE 356,677 km",
+                badgeClass: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+                magnitude: "+14.3% Size",
+                saros: "Perigee 356,677 km",
+                duration: "Full Perigee Disk",
+                visibility: "Global Night Sky",
+                description: "Spectacular Snow Supermoon reaching closest lunar orbital perigee of the decade.",
+                isTotality: false,
+                isEclipse: false
+            },
+            // --- Conjunctions ---
+            {
+                id: "cj-2025-08-12",
+                category: "conjunction",
+                title: "Venus & Jupiter Conjunction",
+                date: new Date("2025-08-12T03:00:00Z"),
+                endDate: new Date("2025-08-12T06:00:00Z"),
+                type: "Planetary Conjunction",
+                badge: "PLANETARY CONJUNCTION",
+                badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+                magnitude: "Sep: 0.8°",
+                saros: "Morning Sky",
+                duration: "Dawn Twilight",
+                visibility: "Global Eastern Dawn Horizon",
+                description: "Ultra-bright close pairing of the two brightest planets within 48 arcminutes.",
+                isTotality: false,
+                isEclipse: false
+            },
+            {
+                id: "cj-2026-08-27",
+                category: "conjunction",
+                title: "Mercury & Jupiter Ultra-Close Conjunction",
+                date: new Date("2026-08-27T19:00:00Z"),
+                endDate: new Date("2026-08-27T23:00:00Z"),
+                type: "Planetary Conjunction",
+                badge: "PLANETARY CONJUNCTION",
+                badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+                magnitude: "Sep: 0.4°",
+                saros: "Evening Sky",
+                duration: "Dusk Twilight",
+                visibility: "Western Horizon at Sunset",
+                description: "Rare 24 arcminute close approach between swift Mercury and giant Jupiter.",
+                isTotality: false,
+                isEclipse: false
+            }
+        ];
+
+        let activeEventCategory = "all";
+        let activeFeaturedEvent = null;
+        let countdownTickerInterval = null;
+
+        function getNextCelestialEvent(category = "all", fromDate = new Date()) {
+            const nowTime = fromDate.getTime();
+            const futureEvents = CELESTIAL_EVENTS
+                .filter(ev => (category === "all" || ev.category === category) && ev.date.getTime() >= nowTime)
+                .sort((a, b) => a.date.getTime() - b.date.getTime());
+            return futureEvents.length > 0 ? futureEvents[0] : CELESTIAL_EVENTS[0];
+        }
+
+        function getFilteredCelestialEvents(category = "all", fromDate = new Date()) {
+            const nowTime = fromDate.getTime();
+            return CELESTIAL_EVENTS
+                .filter(ev => category === "all" || ev.category === category)
+                .sort((a, b) => a.date.getTime() - b.date.getTime());
+        }
+
+        function downloadEventICS(event) {
+            if (!event) return;
+            const formatDate = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+            const nowStr = formatDate(new Date());
+            const dtStart = formatDate(event.date);
+            const dtEnd = formatDate(event.endDate || new Date(event.date.getTime() + 3 * 3600000));
+            const uid = `celestial-${event.id}@moonphasespro.app`;
+
+            const ics = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//Moon Phases Pro//Celestial Events v2.0//EN",
+                "CALSCALE:GREGORIAN",
+                "METHOD:PUBLISH",
+                "BEGIN:VEVENT",
+                `UID:${uid}`,
+                `DTSTAMP:${nowStr}`,
+                `DTSTART:${dtStart}`,
+                `DTEND:${dtEnd}`,
+                `SUMMARY:🌘 ${event.title}`,
+                `DESCRIPTION:${event.description}\\nVisibility: ${event.visibility || 'Global Night Sky'}`,
+                `LOCATION:${event.visibility || 'Global Night Sky'}`,
+                "STATUS:CONFIRMED",
+                "BEGIN:VALARM",
+                "ACTION:DISPLAY",
+                `DESCRIPTION:Reminder: ${event.title} is tomorrow!`,
+                "TRIGGER:-P1D",
+                "END:VALARM",
+                "BEGIN:VALARM",
+                "ACTION:DISPLAY",
+                `DESCRIPTION:Reminder: ${event.title} starts in 1 hour!`,
+                "TRIGGER:-PT1H",
+                "END:VALARM",
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\r\n");
+
+            const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `${event.id}.ics`;
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }, 150);
+        }
+
+        function timeTravelToCelestialEvent(event) {
+            if (!event) return;
+            selectedDate = new Date(event.date);
+            if (typeof updateMoonInfo === 'function') {
+                updateMoonInfo(false, selectedDate);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openNasaSvsModal(event) {
+            const modal = document.getElementById('nasa-svs-eclipse-modal');
+            if (!modal) return;
+            const targetEv = event || activeFeaturedEvent || getNextCelestialEvent("lunar-eclipse");
+            
+            const titleEl = document.getElementById('svs-modal-title');
+            const subEl = document.getElementById('svs-modal-subtitle');
+            const tagEl = document.getElementById('svs-modal-tag');
+            const visEl = document.getElementById('svs-visibility-text');
+
+            if (titleEl) titleEl.textContent = targetEv.title;
+            if (subEl) subEl.textContent = `${targetEv.date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} • Peak ${targetEv.date.toISOString().slice(11, 16)} UTC`;
+            if (tagEl) tagEl.textContent = targetEv.badge;
+            if (visEl) visEl.textContent = targetEv.visibility || "Global Night Sky Visibility";
+
+            const svsTravelBtn = document.getElementById('svs-time-travel-btn');
+            if (svsTravelBtn) {
+                svsTravelBtn.onclick = () => {
+                    modal.classList.remove('visible');
+                    document.body.style.overflow = '';
+                    timeTravelToCelestialEvent(targetEv);
+                };
+            }
+
+            modal.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderCelestialEventsList() {
+            const listEl = document.getElementById('celestial-events-list');
+            if (!listEl) return;
+            const now = new Date();
+            const events = getFilteredCelestialEvents(activeEventCategory, now);
+
+            listEl.innerHTML = '';
+            if (events.length === 0) {
+                listEl.innerHTML = '<div class="text-center py-4 text-xs text-gray-500">No events found in this category.</div>';
+                return;
+            }
+
+            events.forEach(ev => {
+                const diffDays = Math.round((ev.date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                const relativeText = diffDays > 0 ? `in ${diffDays} days` : (diffDays === 0 ? 'Today' : `${Math.abs(diffDays)}d ago`);
+                
+                const card = document.createElement('div');
+                card.className = 'event-item-card p-3 flex items-center justify-between gap-2.5';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${ev.isEclipse ? 'bg-red-500/15 text-red-400 border border-red-500/25' : (ev.category === 'supermoon' ? 'bg-blue-500/15 text-blue-300 border border-blue-400/25' : 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/25')}">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 3a9 9 0 0 1 0 18V3z" fill="currentColor" opacity="0.4"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-xs font-semibold text-white truncate">${ev.title}</span>
+                                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-medium ${ev.badgeClass}">${ev.type}</span>
+                            </div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 truncate">
+                                ${ev.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} • <span class="text-cyan-300 font-medium">${relativeText}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <button type="button" class="btn-travel-item p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.14] text-blue-300 hover:text-white transition active:scale-95 border border-white/10" title="Time travel to event">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </button>
+                        <button type="button" class="btn-ics-item p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.14] text-amber-300 hover:text-amber-200 transition active:scale-95 border border-white/10" title="Export .ICS">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                card.querySelector('.btn-travel-item').onclick = () => timeTravelToCelestialEvent(ev);
+                card.querySelector('.btn-ics-item').onclick = () => downloadEventICS(ev);
+                listEl.appendChild(card);
+            });
+        }
+
+        function updateLiveCountdownTicker() {
+            const now = new Date();
+            if (!activeFeaturedEvent || activeFeaturedEvent.date.getTime() <= now.getTime()) {
+                activeFeaturedEvent = getNextCelestialEvent(activeEventCategory, now);
+            }
+
+            if (!activeFeaturedEvent) return;
+
+            // Update Featured Card elements
+            const badgeEl = document.getElementById('featured-event-badge');
+            const magEl = document.getElementById('featured-event-mag');
+            const titleEl = document.getElementById('featured-event-title');
+            const dateStrEl = document.getElementById('featured-event-date-str');
+            const glowEl = document.getElementById('showcase-ambient-glow');
+
+            if (badgeEl) {
+                badgeEl.textContent = activeFeaturedEvent.badge;
+                badgeEl.className = `px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${activeFeaturedEvent.badgeClass}`;
+            }
+            if (magEl) {
+                magEl.textContent = `Mag: ${activeFeaturedEvent.magnitude} • ${activeFeaturedEvent.saros}`;
+            }
+            if (titleEl) {
+                titleEl.textContent = activeFeaturedEvent.title;
+            }
+            if (dateStrEl) {
+                dateStrEl.textContent = `${activeFeaturedEvent.date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} • Peak ${activeFeaturedEvent.date.toISOString().slice(11, 16)} UTC`;
+            }
+            if (glowEl) {
+                if (activeFeaturedEvent.category === 'lunar-eclipse') {
+                    glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-red-600/20 blur-3xl pointer-events-none transition-all duration-700';
+                } else if (activeFeaturedEvent.category === 'supermoon') {
+                    glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-blue-600/20 blur-3xl pointer-events-none transition-all duration-700';
+                } else {
+                    glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-amber-600/20 blur-3xl pointer-events-none transition-all duration-700';
+                }
+            }
+
+            // Calculate precise remaining time
+            const diff = Math.max(0, activeFeaturedEvent.date.getTime() - now.getTime());
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const dEl = document.getElementById('cnt-days');
+            const hEl = document.getElementById('cnt-hours');
+            const mEl = document.getElementById('cnt-mins');
+            const sEl = document.getElementById('cnt-secs');
+
+            if (dEl) dEl.textContent = days;
+            if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+            if (mEl) mEl.textContent = String(mins).padStart(2, '0');
+            if (sEl) sEl.textContent = String(secs).padStart(2, '0');
+
+            // Sync dynamic banner in Notification Modal
+            const notifBanner = document.getElementById('notification-eclipse-countdown-banner');
+            const notifTitle = document.getElementById('notif-eclipse-banner-title');
+            const notifDate = document.getElementById('notif-eclipse-banner-date');
+            if (notifBanner && notificationSettingsForm && notificationSettingsForm.eclipse) {
+                if (notificationSettingsForm.eclipse.checked) {
+                    notifBanner.classList.remove('hidden');
+                    notifBanner.classList.add('flex');
+                    const nextEclipse = getNextCelestialEvent("lunar-eclipse", now);
+                    const eDiff = Math.max(0, nextEclipse.date.getTime() - now.getTime());
+                    const eDays = Math.floor(eDiff / (1000 * 60 * 60 * 24));
+                    const eHours = Math.floor((eDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    if (notifTitle) notifTitle.textContent = `${nextEclipse.title} in ${eDays}d ${eHours}h`;
+                    if (notifDate) notifDate.textContent = `${nextEclipse.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} • Peak ${nextEclipse.date.toISOString().slice(11, 16)} UTC`;
+                } else {
+                    notifBanner.classList.add('hidden');
+                    notifBanner.classList.remove('flex');
+                }
+            }
+        }
+
+        function initCelestialEventsEngine() {
+            activeFeaturedEvent = getNextCelestialEvent("all");
+            renderCelestialEventsList();
+            updateLiveCountdownTicker();
+
+            if (countdownTickerInterval) clearInterval(countdownTickerInterval);
+            countdownTickerInterval = setInterval(updateLiveCountdownTicker, 1000);
+
+            // Hook Hero card buttons
+            const heroTravelBtn = document.getElementById('hero-time-travel-btn');
+            if (heroTravelBtn) {
+                heroTravelBtn.onclick = () => timeTravelToCelestialEvent(activeFeaturedEvent);
+            }
+            const heroIcsBtn = document.getElementById('hero-ics-btn');
+            if (heroIcsBtn) {
+                heroIcsBtn.onclick = () => downloadEventICS(activeFeaturedEvent);
+            }
+
+            // Hook NASA SVS Modal trigger
+            const nasaSvsBtn = document.getElementById('nasa-svs-preview-btn');
+            if (nasaSvsBtn) {
+                nasaSvsBtn.onclick = () => openNasaSvsModal(activeFeaturedEvent);
+            }
+            const nasaSvsCloseBtn = document.getElementById('nasa-svs-modal-close');
+            const nasaSvsModal = document.getElementById('nasa-svs-eclipse-modal');
+            if (nasaSvsCloseBtn && nasaSvsModal) {
+                nasaSvsCloseBtn.onclick = () => {
+                    nasaSvsModal.classList.remove('visible');
+                    document.body.style.overflow = '';
+                };
+                nasaSvsModal.addEventListener('click', (e) => {
+                    if (e.target === nasaSvsModal) {
+                        nasaSvsModal.classList.remove('visible');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+
+            // Hook Notification banner jump button
+            const notifJumpBtn = document.getElementById('notif-eclipse-jump-btn');
+            if (notifJumpBtn) {
+                notifJumpBtn.onclick = () => {
+                    const nextEclipse = getNextCelestialEvent("lunar-eclipse");
+                    if (notificationModal) {
+                        notificationModal.classList.remove('visible');
+                        document.body.style.overflow = '';
+                    }
+                    timeTravelToCelestialEvent(nextEclipse);
+                };
+            }
+
+            // Hook category filter buttons
+            const filterBtns = document.querySelectorAll('.event-filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => {
+                        b.classList.remove('active', 'active-supermoon', 'active-solar');
+                    });
+                    const cat = btn.getAttribute('data-category');
+                    activeEventCategory = cat;
+                    if (cat === 'supermoon') btn.classList.add('active-supermoon');
+                    else if (cat === 'solar-eclipse') btn.classList.add('active-solar');
+                    else btn.classList.add('active');
+
+                    activeFeaturedEvent = getNextCelestialEvent(cat);
+                    renderCelestialEventsList();
+                    updateLiveCountdownTicker();
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCelestialEventsEngine();
+        });
+
         // Download ICS when button clicked
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".ics-download-btn").forEach(btn => {
@@ -4207,7 +5101,12 @@
                             break;
                         case "eclipse":
                             title = "Lunar Eclipse";
-                            desc = "The next lunar eclipse (approximate, for demo) occurs on this date.";
+                            desc = "The next lunar eclipse occurs on this date.";
+                            const nextEclipse = getNextCelestialEvent("lunar-eclipse");
+                            if (nextEclipse) {
+                                downloadEventICS(nextEclipse);
+                                return;
+                            }
                             date = getNextPhaseDate("eclipse");
                             break;
                         default:
