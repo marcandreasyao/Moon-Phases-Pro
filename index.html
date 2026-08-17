@@ -1946,47 +1946,70 @@
 
             <!-- Bottom Floating Stargazing Controls & Collapsible Telemetry HUD -->
             <div class="sky-map-bottom-hud">
-                <!-- Floating Action Buttons Row -->
-                <div class="flex items-center justify-between w-full gap-2 mb-2">
-                    <!-- Left: Compass & Focus Buttons -->
-                    <div class="flex items-center gap-2">
-                        <!-- Toggle Real-Time Gyroscope / Live Compass Button -->
-                        <button id="sky-map-gyro-btn"
-                            class="px-3.5 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-800 text-white text-xs font-semibold tracking-wide border border-white/20 shadow-xl backdrop-blur-xl flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
-                            title="Toggle Live Sky Gyroscope & Compass Tracking">
-                            <svg id="sky-map-gyro-icon" class="w-4 h-4 text-cyan-400 transition-transform duration-300 shrink-0"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" fill-opacity="0.35" />
-                            </svg>
-                            <span id="sky-map-gyro-btn-text">Live Compass</span>
+                <!-- Unified VisionOS Floating Spatial Viewport Dock -->
+                <div class="flex items-center justify-center w-full mb-2.5">
+                    <div class="sky-spatial-dock flex items-center p-1 sm:p-1.5 rounded-full bg-[rgba(16,18,28,0.92)] border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-2xl transition-all duration-300 gap-1 sm:gap-1.5 select-none">
+                        
+                        <!-- 1. Gyroscope / Live Compass Motion Tracking -->
+                        <button id="sky-map-gyro-btn" type="button"
+                            class="spatial-dock-btn flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold text-gray-200 hover:text-white bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 active:scale-95 transition-all group focus:outline-none"
+                            title="Toggle Live Sky Gyroscope & Compass Sensor Tracking">
+                            <div class="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-400/25 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                <svg id="sky-map-gyro-icon" class="w-3.5 h-3.5 text-cyan-400 shrink-0 transition-transform duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="gyroNeedleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#22D3EE"/>
+                                            <stop offset="100%" stop-color="#0284C7"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.25" stroke-dasharray="3 1.5" opacity="0.6"/>
+                                    <ellipse cx="12" cy="12" rx="9.5" ry="4" stroke="currentColor" stroke-width="1" opacity="0.45"/>
+                                    <polygon points="12,4.5 14.5,12 12,11 9.5,12" fill="url(#gyroNeedleGrad)"/>
+                                    <polygon points="12,19.5 14.5,12 12,13 9.5,12" fill="#64748B" opacity="0.75"/>
+                                    <circle cx="12" cy="12" r="1.5" fill="#FFFFFF"/>
+                                </svg>
+                            </div>
+                            <span id="sky-map-gyro-btn-text" class="tracking-wide">Live Compass</span>
+                            <span id="gyro-live-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse hidden"></span>
                         </button>
 
-                        <!-- Toggle Focus Moon / Reset Observer View -->
-                        <button id="sky-map-focus-btn"
-                            class="px-3.5 py-1.5 rounded-full bg-blue-600/85 hover:bg-blue-500 text-white text-xs font-semibold tracking-wide border border-blue-400/40 shadow-xl backdrop-blur-xl flex items-center gap-1.5 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
-                            title="Toggle Focus Moon / Reset Observer View">
-                            <svg id="sky-map-focus-icon" class="w-4 h-4 text-blue-200 transition-transform duration-300 shrink-0"
-                                fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="8" />
-                                <circle cx="12" cy="12" r="3" fill="currentColor" />
-                                <path d="M12 2v2m0 16v2M2 12h2m16 0h2" stroke-linecap="round" />
-                            </svg>
-                            <span id="sky-map-focus-btn-text">Focus Moon</span>
+                        <div class="w-px h-4 bg-white/15 mx-0.5"></div>
+
+                        <!-- 2. Focus Moon / Lunar Lock -->
+                        <button id="sky-map-focus-btn" type="button"
+                            class="spatial-dock-btn flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 border border-blue-400/40 shadow-[0_0_16px_rgba(37,99,235,0.4)] active:scale-95 transition-all group focus:outline-none"
+                            title="Lock camera focus on Moon position">
+                            <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-45 transition-transform">
+                                <svg id="sky-map-focus-icon" class="w-3.5 h-3.5 text-blue-100 shrink-0 transition-transform duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7 4H5a1 1 0 0 0-1 1v2M17 4h2a1 1 0 0 1 1 1v2M7 20H5a1 1 0 0 1-1-1v-2M17 20h2a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1" stroke-dasharray="1.5 1" opacity="0.7"/>
+                                    <path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 0 0-7z" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <span id="sky-map-focus-btn-text" class="tracking-wide">Focus Moon</span>
                         </button>
+
+                        <div class="w-px h-4 bg-white/15 mx-0.5"></div>
+
+                        <!-- 3. Astrometric Telemetry HUD Toggle -->
+                        <button id="sky-map-telemetry-toggle-btn" type="button"
+                            class="spatial-dock-btn flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-medium text-gray-300 hover:text-white bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 active:scale-95 transition-all group focus:outline-none"
+                            title="Toggle Astrometric Telemetry & Coordinate Grid">
+                            <div class="w-5 h-5 rounded-full bg-indigo-500/15 border border-indigo-400/25 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                <svg class="w-3.5 h-3.5 text-indigo-300 shrink-0 transition-transform duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25" opacity="0.5"/>
+                                    <path d="M4 12c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="currentColor" stroke-width="1" stroke-dasharray="2 1.5" opacity="0.7"/>
+                                    <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                    <circle cx="12" cy="12" r="2" fill="#818CF8" stroke="#FFFFFF" stroke-width="0.75"/>
+                                </svg>
+                            </div>
+                            <span id="sky-map-telemetry-toggle-text" class="tracking-wide">Telemetry</span>
+                            <svg id="sky-map-telemetry-chevron" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 transform rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
                     </div>
-
-                    <!-- Right: Telemetry Toggle Button -->
-                    <button id="sky-map-telemetry-toggle-btn" type="button"
-                        class="px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-gray-200 text-xs font-medium border border-white/15 shadow-xl backdrop-blur-xl flex items-center gap-1.5 transition-all duration-200 active:scale-95">
-                        <svg class="w-3.5 h-3.5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <span id="sky-map-telemetry-toggle-text">Telemetry</span>
-                        <svg id="sky-map-telemetry-chevron" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 transform rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
                 </div>
 
                 <!-- Collapsible VisionOS Glassmorphic Telemetry Card -->
@@ -3553,21 +3576,24 @@
             const gyroBtn = document.getElementById('sky-map-gyro-btn');
             const btnText = document.getElementById('sky-map-gyro-btn-text');
             const gyroIcon = document.getElementById('sky-map-gyro-icon');
+            const pulseDot = document.getElementById('gyro-live-pulse-dot');
 
             if (isActive) {
                 if (btnText) btnText.textContent = 'Live Active';
+                if (pulseDot) pulseDot.classList.remove('hidden');
                 if (gyroBtn) {
-                    gyroBtn.classList.remove('bg-slate-900/80', 'hover:bg-slate-800/90', 'border-white/20');
-                    gyroBtn.classList.add('bg-cyan-600/90', 'hover:bg-cyan-500/90', 'border-cyan-400/60', 'shadow-cyan-500/25');
+                    gyroBtn.classList.remove('bg-white/[0.06]', 'hover:bg-white/[0.14]', 'border-white/10', 'text-gray-200');
+                    gyroBtn.classList.add('bg-cyan-500/30', 'hover:bg-cyan-500/40', 'border-cyan-400/70', 'shadow-[0_0_16px_rgba(6,182,212,0.45)]', 'text-cyan-100');
                 }
-                if (gyroIcon) gyroIcon.classList.add('text-white');
+                if (gyroIcon) gyroIcon.classList.add('text-cyan-200');
             } else {
                 if (btnText) btnText.textContent = 'Live Compass';
+                if (pulseDot) pulseDot.classList.add('hidden');
                 if (gyroBtn) {
-                    gyroBtn.classList.remove('bg-cyan-600/90', 'hover:bg-cyan-500/90', 'border-cyan-400/60', 'shadow-cyan-500/25');
-                    gyroBtn.classList.add('bg-slate-900/80', 'hover:bg-slate-800/90', 'border-white/20');
+                    gyroBtn.classList.remove('bg-cyan-500/30', 'hover:bg-cyan-500/40', 'border-cyan-400/70', 'shadow-[0_0_16px_rgba(6,182,212,0.45)]', 'text-cyan-100');
+                    gyroBtn.classList.add('bg-white/[0.06]', 'hover:bg-white/[0.14]', 'border-white/10', 'text-gray-200');
                 }
-                if (gyroIcon) gyroIcon.classList.remove('text-white');
+                if (gyroIcon) gyroIcon.classList.remove('text-cyan-200');
             }
         }
 
@@ -3586,10 +3612,10 @@
 
             if (!isSkyMapFocusedOnMoon) {
                 isSkyMapFocusedOnMoon = true;
-                if (btnText) btnText.textContent = 'Unfocus Moon';
+                if (btnText) btnText.textContent = 'Locked';
                 if (focusBtn) {
-                    focusBtn.classList.remove('bg-blue-600/80', 'hover:bg-blue-500/90', 'border-blue-400/40');
-                    focusBtn.classList.add('bg-indigo-700/90', 'hover:bg-indigo-600/90', 'border-indigo-400/40');
+                    focusBtn.classList.remove('from-blue-600', 'via-indigo-600', 'to-blue-500');
+                    focusBtn.classList.add('from-indigo-600', 'via-purple-600', 'to-indigo-500', 'border-purple-400/60', 'shadow-[0_0_20px_rgba(168,85,247,0.5)]');
                 }
                 focusSkyMapOnMoon();
 
@@ -3605,8 +3631,8 @@
                 isSkyMapFocusedOnMoon = false;
                 if (btnText) btnText.textContent = 'Focus Moon';
                 if (focusBtn) {
-                    focusBtn.classList.remove('bg-indigo-700/90', 'hover:bg-indigo-600/90', 'border-indigo-400/40');
-                    focusBtn.classList.add('bg-blue-600/80', 'hover:bg-blue-500/90', 'border-blue-400/40');
+                    focusBtn.classList.remove('from-indigo-600', 'via-purple-600', 'to-indigo-500', 'border-purple-400/60', 'shadow-[0_0_20px_rgba(168,85,247,0.5)]');
+                    focusBtn.classList.add('from-blue-600', 'via-indigo-600', 'to-blue-500');
                 }
                 hideHorizonAlert();
                 resetObserverGroundView();
