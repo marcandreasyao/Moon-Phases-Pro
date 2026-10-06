@@ -825,47 +825,41 @@
             animation: fadeIn 0.25s ease-out forwards;
         }
 
-        /* --- Celestial Events & Eclipse Countdown Showcase Styles --- */
+        /* --- Celestial Events & Eclipse Showcase Styles (Astro-Telemetry Aesthetic) --- */
         .celestial-showcase-card {
-            background: linear-gradient(135deg, rgba(28, 30, 44, 0.88) 0%, rgba(14, 16, 26, 0.94) 100%);
+            background: linear-gradient(145deg, rgba(20, 22, 32, 0.92) 0%, rgba(10, 12, 18, 0.96) 100%);
             backdrop-filter: blur(28px) saturate(190%);
             -webkit-backdrop-filter: blur(28px) saturate(190%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.10);
             box-shadow: 
-                inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
-                0 16px 40px -8px rgba(0, 0, 0, 0.65),
-                0 0 24px -4px rgba(239, 68, 68, 0.12);
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                0 16px 40px -8px rgba(0, 0, 0, 0.7);
             border-radius: 1.5rem;
         }
 
-        .countdown-digit-box {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
-            border-radius: 0.85rem;
+        .countdown-telemetry-row {
             font-variant-numeric: tabular-nums;
             font-feature-settings: "tnum";
         }
 
-        .event-filter-btn.active {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.85) 0%, rgba(185, 28, 28, 0.85) 100%);
-            color: #FFFFFF;
-            border-color: rgba(252, 165, 165, 0.4);
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+        .event-filter-btn {
+            color: #94a3b8;
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .event-filter-btn.active-supermoon {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(37, 99, 235, 0.85) 100%);
-            color: #FFFFFF;
-            border-color: rgba(147, 197, 253, 0.4);
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+        .event-filter-btn:hover {
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.05);
         }
 
+        .event-filter-btn.active,
+        .event-filter-btn.active-supermoon,
         .event-filter-btn.active-solar {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.85) 0%, rgba(217, 119, 6, 0.85) 100%);
+            background: rgba(255, 255, 255, 0.12);
             color: #FFFFFF;
-            border-color: rgba(253, 230, 138, 0.4);
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+            border-color: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
         }
 
         /* --- VisionOS Celestial Stream / Timeline Styles (Responsive & Adaptive) --- */
@@ -1484,48 +1478,56 @@
                     <!-- Ambient Eclipse / Atmospheric background glow -->
                     <div id="showcase-ambient-glow" class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-red-600/15 blur-3xl pointer-events-none transition-all duration-700"></div>
 
-                    <!-- Header with Title and NASA SVS Badge -->
+                    <!-- Header with Title and Official NASA SVS Vector Badge -->
                     <div class="flex items-center justify-between mb-3.5 relative z-10">
-                        <div class="flex items-center gap-2">
-                            <span class="flex items-center justify-center w-7 h-7 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.06] text-red-400 border border-white/10 shadow-inner">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="9" stroke="currentColor" />
                                     <path d="M12 3a9 9 0 0 1 0 18V3z" fill="currentColor" opacity="0.4" />
                                     <circle cx="12" cy="12" r="3" fill="#ef4444" />
                                 </svg>
                             </span>
-                            <h3 class="text-sm sm:text-base font-semibold text-gray-100 tracking-wide">
+                            <h3 class="text-sm sm:text-base font-semibold text-white tracking-wide">
                                 Celestial Events & Eclipses
                             </h3>
                         </div>
                         <button type="button" id="nasa-svs-preview-btn"
-                            class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-xs font-medium text-blue-300 hover:text-blue-200 transition active:scale-95 shadow-sm"
+                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-white transition active:scale-95 shadow-sm group"
                             title="Interactive NASA SVS Eclipse Visualizer & Contact Phases">
-                            <svg class="w-3 h-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                            <!-- Official NASA Meatball Insignia Vector SVG -->
+                            <svg class="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" fill="#0B3D91" />
+                                <circle cx="6.5" cy="8" r="0.5" fill="#FFFFFF" />
+                                <circle cx="8.5" cy="6" r="0.4" fill="#FFFFFF" />
+                                <circle cx="15.5" cy="7" r="0.5" fill="#FFFFFF" />
+                                <circle cx="17.5" cy="9.5" r="0.4" fill="#FFFFFF" />
+                                <circle cx="7" cy="15.5" r="0.4" fill="#FFFFFF" />
+                                <circle cx="16.5" cy="15.5" r="0.5" fill="#FFFFFF" />
+                                <ellipse cx="12" cy="12" rx="9.5" ry="3.5" stroke="#FFFFFF" stroke-width="0.75" transform="rotate(-30 12 12)" fill="none" opacity="0.9" />
+                                <path d="M5.5 14.5L12 6.5L18.5 14.5L15 13L12 9.5L9 13Z" fill="#FC3D21" />
+                                <text x="12" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="4.8" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.3">NASA</text>
                             </svg>
-                            NASA SVS
+                            <span class="font-bold tracking-wider text-[11px] text-white">NASA</span>
+                            <span class="text-[10px] font-semibold text-blue-300 tracking-wider">SVS</span>
                         </button>
                     </div>
 
-                    <!-- Featured Next Event Hero Card (Mobile-Adaptive Layout) -->
+                    <!-- Featured Next Event Hero Card (Telemetry Architecture matching upper cards) -->
                     <div id="featured-event-hero" class="p-3 min-[375px]:p-4 rounded-2xl bg-black/40 border border-white/10 shadow-inner mb-3 relative overflow-hidden group">
                         
-                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 mb-3">
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 mb-2">
                             <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1.5 min-[375px]:gap-2 mb-1 flex-wrap">
-                                    <span id="featured-event-badge" class="px-2 min-[375px]:px-2.5 py-0.5 rounded-full text-[10px] min-[375px]:text-xs font-bold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 blood-moon-glow">
-                                        TOTAL LUNAR ECLIPSE
-                                    </span>
-                                    <span id="featured-event-mag" class="text-[10px] min-[375px]:text-xs font-medium text-gray-400 whitespace-nowrap">
-                                        Mag: 1.15 • Saros 133
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span id="featured-event-badge-container" class="flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-red-400">
+                                        <span id="featured-event-dot" class="w-2 h-2 rounded-full bg-red-400 shadow-[0_0_8px_#ef4444]"></span>
+                                        <span id="featured-event-badge">TOTAL LUNAR ECLIPSE</span>
                                     </span>
                                 </div>
                                 <h4 id="featured-event-title" class="text-sm min-[375px]:text-base min-[430px]:text-lg font-bold text-white tracking-tight leading-snug break-words">
                                     Total Lunar Eclipse (Blood Moon)
                                 </h4>
-                                <p id="featured-event-date-str" class="text-[11px] min-[375px]:text-xs text-gray-300 mt-0.5 truncate">
+                                <p id="featured-event-date-str" class="text-[11px] min-[375px]:text-xs text-gray-400 mt-0.5 truncate">
                                     Tuesday, March 3, 2026 • Peak 11:34 UTC
                                 </p>
                             </div>
@@ -1552,58 +1554,66 @@
                             </div>
                         </div>
 
-                        <!-- Precision Live Countdown Ticker (Fluid Scaling across 320px–430px) -->
-                        <div class="pt-2 border-t border-white/10 flex items-center justify-between gap-1">
+                        <!-- 4-Column Astrometric Telemetry Strip (Consistent with MOONRISE/DISTANCE panels) -->
+                        <div class="grid grid-cols-2 min-[400px]:grid-cols-4 gap-2 pt-2.5 pb-2.5 border-t border-b border-white/[0.08] my-2 text-center">
+                            <div>
+                                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5" id="hero-stat-1-lbl">MAGNITUDE</div>
+                                <div class="text-xs sm:text-sm font-semibold text-white font-mono" id="hero-stat-1-val">1.15</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5" id="hero-stat-2-lbl">SAROS</div>
+                                <div class="text-xs sm:text-sm font-semibold text-white font-mono" id="hero-stat-2-val">Series 133</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5" id="hero-stat-3-lbl">DURATION</div>
+                                <div class="text-xs sm:text-sm font-semibold text-cyan-300 font-mono" id="hero-stat-3-val">65m Totality</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5" id="hero-stat-4-lbl">VISIBILITY</div>
+                                <div class="text-xs sm:text-sm font-semibold text-gray-200 truncate" id="hero-stat-4-val" title="Global Night Sky">Americas & Pacific</div>
+                            </div>
+                        </div>
+
+                        <!-- Streamlined Precision Live Countdown Ticker -->
+                        <div class="pt-1 flex items-center justify-between gap-2">
                             <span class="text-[10px] min-[375px]:text-xs font-medium text-gray-400 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
-                                <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
-                                <span class="hidden min-[390px]:inline">Live</span> Countdown
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                                Live Countdown
                             </span>
-                            <div class="flex items-center gap-0.5 min-[375px]:gap-1 sm:gap-1.5 text-center shrink-0" id="featured-countdown-grid">
-                                <div class="countdown-digit-box px-1.5 min-[375px]:px-2 py-1 min-w-[28px] min-[375px]:min-w-[34px] min-[430px]:min-w-[40px]">
-                                    <div id="cnt-days" class="text-xs min-[375px]:text-sm min-[430px]:text-base font-bold text-white leading-none font-mono">-</div>
-                                    <div class="text-[9px] min-[375px]:text-[10px] text-gray-400 uppercase font-bold mt-0.5">d</div>
-                                </div>
-                                <span class="text-gray-500 font-bold text-xs">:</span>
-                                <div class="countdown-digit-box px-1.5 min-[375px]:px-2 py-1 min-w-[28px] min-[375px]:min-w-[34px] min-[430px]:min-w-[40px]">
-                                    <div id="cnt-hours" class="text-xs min-[375px]:text-sm min-[430px]:text-base font-bold text-white leading-none font-mono">-</div>
-                                    <div class="text-[9px] min-[375px]:text-[10px] text-gray-400 uppercase font-bold mt-0.5">h</div>
-                                </div>
-                                <span class="text-gray-500 font-bold text-xs">:</span>
-                                <div class="countdown-digit-box px-1.5 min-[375px]:px-2 py-1 min-w-[28px] min-[375px]:min-w-[34px] min-[430px]:min-w-[40px]">
-                                    <div id="cnt-mins" class="text-xs min-[375px]:text-sm min-[430px]:text-base font-bold text-white leading-none font-mono">-</div>
-                                    <div class="text-[9px] min-[375px]:text-[10px] text-gray-400 uppercase font-bold mt-0.5">m</div>
-                                </div>
-                                <span class="text-gray-500 font-bold text-xs">:</span>
-                                <div class="countdown-digit-box px-1.5 min-[375px]:px-2 py-1 min-w-[28px] min-[375px]:min-w-[34px] min-[430px]:min-w-[40px]">
-                                    <div id="cnt-secs" class="text-xs min-[375px]:text-sm min-[430px]:text-base font-bold text-cyan-300 leading-none font-mono">-</div>
-                                    <div class="text-[9px] min-[375px]:text-[10px] text-gray-400 uppercase font-bold mt-0.5">s</div>
-                                </div>
+                            <div class="flex items-baseline gap-1 text-center font-mono">
+                                <span id="cnt-days" class="text-xs min-[375px]:text-sm sm:text-base font-bold text-white tabular-nums">-</span><span class="text-[9px] min-[375px]:text-[10px] text-gray-500 font-bold uppercase mr-1">d</span>
+                                <span class="text-gray-600 font-bold text-xs">:</span>
+                                <span id="cnt-hours" class="text-xs min-[375px]:text-sm sm:text-base font-bold text-white tabular-nums">-</span><span class="text-[9px] min-[375px]:text-[10px] text-gray-500 font-bold uppercase mr-1">h</span>
+                                <span class="text-gray-600 font-bold text-xs">:</span>
+                                <span id="cnt-mins" class="text-xs min-[375px]:text-sm sm:text-base font-bold text-white tabular-nums">-</span><span class="text-[9px] min-[375px]:text-[10px] text-gray-500 font-bold uppercase mr-1">m</span>
+                                <span class="text-gray-600 font-bold text-xs">:</span>
+                                <span id="cnt-secs" class="text-xs min-[375px]:text-sm sm:text-base font-bold text-cyan-300 tabular-nums">-</span><span class="text-[9px] min-[375px]:text-[10px] text-cyan-500/80 font-bold uppercase">s</span>
                             </div>
                         </div>
 
                     </div>
 
-                    <!-- Category Filter Segmented Tabs (Horizontal Swipeable Carousel) -->
-                    <div class="celestial-filter-scroll flex items-center gap-1.5 p-1 rounded-2xl bg-black/45 border border-white/10 mb-3 select-none touch-pan-x snap-x snap-mandatory">
-                        <button type="button" class="event-filter-btn active snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all duration-200 active:scale-95 min-h-[34px] text-center" data-category="all">
+                    <!-- Category Filter Segmented Tabs (Apple Weather / Flighty Dark Mode Style) -->
+                    <div class="celestial-filter-scroll flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-white/10 mb-3 select-none touch-pan-x snap-x snap-mandatory">
+                        <button type="button" class="event-filter-btn active snap-start shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all min-h-[32px] text-center" data-category="all">
                             All Events
                         </button>
-                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all duration-200 active:scale-95 min-h-[34px] text-center" data-category="lunar-eclipse">
+                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition-all min-h-[32px] text-center" data-category="lunar-eclipse">
                             Lunar Eclipses
                         </button>
-                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all duration-200 active:scale-95 min-h-[34px] text-center" data-category="solar-eclipse">
+                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition-all min-h-[32px] text-center" data-category="solar-eclipse">
                             Solar Eclipses
                         </button>
-                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all duration-200 active:scale-95 min-h-[34px] text-center" data-category="supermoon">
+                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition-all min-h-[32px] text-center" data-category="supermoon">
                             Supermoons
                         </button>
-                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white transition-all duration-200 active:scale-95 min-h-[34px] text-center" data-category="conjunction">
+                        <button type="button" class="event-filter-btn snap-start shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition-all min-h-[32px] text-center" data-category="conjunction">
                             Conjunctions
                         </button>
                     </div>
 
                     <!-- Upcoming Events List Container -->
-                    <div id="celestial-events-list" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-0.5 custom-scrollbar">
+                    <div id="celestial-events-list" class="flex flex-col gap-2 max-h-64 overflow-y-auto pr-0.5 custom-scrollbar">
                         <!-- Dynamic event items rendered by JavaScript -->
                     </div>
 
@@ -2410,16 +2420,28 @@
         <div class="modal-content max-w-lg w-[92%] p-5 sm:p-6 overflow-y-auto max-h-[90vh]" style="border-radius: 28px; background: linear-gradient(165deg, rgba(28, 30, 42, 0.92) 0%, rgba(14, 16, 24, 0.96) 100%); backdrop-filter: blur(40px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.18);">
             
             <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <span class="w-9 h-9 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 shadow-inner flex-shrink-0">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 2a10 10 0 0 0 0 20V2z" fill="#ef4444" />
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-full bg-[#0B3D91]/25 border border-blue-400/30 flex items-center justify-center p-1.5 flex-shrink-0 shadow-inner">
+                        <!-- Official NASA Meatball Insignia Vector SVG -->
+                        <svg class="w-full h-full" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" fill="#0B3D91" />
+                            <circle cx="6.5" cy="8" r="0.5" fill="#FFFFFF" />
+                            <circle cx="8.5" cy="6" r="0.4" fill="#FFFFFF" />
+                            <circle cx="15.5" cy="7" r="0.5" fill="#FFFFFF" />
+                            <circle cx="17.5" cy="9.5" r="0.4" fill="#FFFFFF" />
+                            <circle cx="7" cy="15.5" r="0.4" fill="#FFFFFF" />
+                            <circle cx="16.5" cy="15.5" r="0.5" fill="#FFFFFF" />
+                            <ellipse cx="12" cy="12" rx="9.5" ry="3.5" stroke="#FFFFFF" stroke-width="0.75" transform="rotate(-30 12 12)" fill="none" opacity="0.9" />
+                            <path d="M5.5 14.5L12 6.5L18.5 14.5L15 13L12 9.5L9 13Z" fill="#FC3D21" />
+                            <text x="12" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="4.8" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.3">NASA</text>
                         </svg>
                     </span>
                     <div>
-                        <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">NASA SVS Eclipse Visualizer</h3>
-                        <p class="text-xs text-gray-400">Scientific Visualization Studio & Dial-A-Moon Simulation</p>
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">NASA SVS Eclipse Visualizer</h3>
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">GSFC</span>
+                        </div>
+                        <p class="text-xs text-gray-400">Scientific Visualization Studio • Dial-A-Moon Simulation</p>
                     </div>
                 </div>
                 <button type="button" id="nasa-svs-modal-close" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center transition border border-white/10 focus:outline-none" title="Close">
@@ -2474,6 +2496,15 @@
                         Visible across Asia, Australia, the Pacific Basin, the Americas, and Western Europe.
                     </p>
                 </div>
+            </div>
+
+            <!-- Official NASA SVS Attribution Footer -->
+            <div class="text-[11px] text-gray-400 mt-3 pt-2.5 border-t border-white/10 flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-1.5">
+                <span>Scientific Visualization Studio / Goddard Space Flight Center</span>
+                <a href="https://svs.gsfc.nasa.gov" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1 transition">
+                    svs.gsfc.nasa.gov
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                </a>
             </div>
         </div>
     </div>
@@ -5477,11 +5508,11 @@
                                 </div>
 
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <h4 class="text-xs min-[375px]:text-sm font-bold text-white tracking-tight group-hover:text-blue-200 transition-colors truncate">
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-xs min-[375px]:text-sm font-semibold text-white tracking-tight group-hover:text-blue-200 transition-colors truncate">
                                             ${ev.title}
                                         </h4>
-                                        <span class="px-1.5 min-[375px]:px-2 py-0.5 rounded-full text-[9px] min-[375px]:text-[10px] font-bold uppercase tracking-wider ${ev.badgeClass} shrink-0">
+                                        <span class="text-[10px] font-semibold tracking-wider uppercase shrink-0 hidden min-[380px]:inline" style="color: ${nodeBorderColor};">
                                             ${ev.type}
                                         </span>
                                     </div>
@@ -5511,22 +5542,18 @@
                             </div>
                         </div>
 
-                        <!-- Bottom Astrometric Metrics Strip -->
-                        <div class="pt-1.5 min-[375px]:pt-2 border-t border-white/[0.06] flex items-center justify-between gap-1.5 min-[375px]:gap-2 flex-wrap text-[10px] min-[375px]:text-[11px] text-gray-400">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.07] text-gray-300 font-mono">
-                                    Mag: <strong class="text-white">${ev.magnitude}</strong>
-                                </span>
-                                <span class="px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.07] text-gray-300">
-                                    ${ev.saros}
-                                </span>
-                                <span class="px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.07] text-cyan-200">
-                                    ${ev.duration}
-                                </span>
+                        <!-- Bottom Astrometric Metrics Telemetry (Tabular format matching top cards) -->
+                        <div class="pt-2 border-t border-white/[0.06] flex items-center justify-between gap-2 text-[10px] min-[375px]:text-[11px] text-gray-400 font-mono">
+                            <div class="flex items-center gap-1.5 sm:gap-2 truncate">
+                                <span>Mag: <strong class="text-white">${ev.magnitude}</strong></span>
+                                <span class="text-gray-600">•</span>
+                                <span class="text-gray-300">${ev.saros}</span>
+                                <span class="text-gray-600">•</span>
+                                <span class="text-cyan-300 font-medium">${ev.duration}</span>
                             </div>
-                            <div class="flex items-center gap-1 text-gray-400 ml-auto truncate max-w-[120px] min-[375px]:max-w-[170px] sm:max-w-[220px]" title="${ev.visibility}">
+                            <div class="flex items-center gap-1 text-gray-400 ml-auto truncate max-w-[110px] min-[375px]:max-w-[150px] sm:max-w-[200px]" title="${ev.visibility}">
                                 <svg class="w-3 h-3 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                                <span class="truncate">${ev.visibility}</span>
+                                <span class="truncate font-sans">${ev.visibility}</span>
                             </div>
                         </div>
 
@@ -5551,32 +5578,65 @@
 
             // Update Featured Card elements
             const badgeEl = document.getElementById('featured-event-badge');
-            const magEl = document.getElementById('featured-event-mag');
+            const dotEl = document.getElementById('featured-event-dot');
             const titleEl = document.getElementById('featured-event-title');
             const dateStrEl = document.getElementById('featured-event-date-str');
             const glowEl = document.getElementById('showcase-ambient-glow');
 
-            if (badgeEl) {
-                badgeEl.textContent = activeFeaturedEvent.badge;
-                badgeEl.className = `px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${activeFeaturedEvent.badgeClass}`;
+            const s1Lbl = document.getElementById('hero-stat-1-lbl');
+            const s1Val = document.getElementById('hero-stat-1-val');
+            const s2Lbl = document.getElementById('hero-stat-2-lbl');
+            const s2Val = document.getElementById('hero-stat-2-val');
+            const s3Lbl = document.getElementById('hero-stat-3-lbl');
+            const s3Val = document.getElementById('hero-stat-3-val');
+            const s4Lbl = document.getElementById('hero-stat-4-lbl');
+            const s4Val = document.getElementById('hero-stat-4-val');
+
+            if (badgeEl) badgeEl.textContent = activeFeaturedEvent.badge;
+
+            if (activeFeaturedEvent.category === 'lunar-eclipse') {
+                if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-red-400 shadow-[0_0_8px_#ef4444]';
+                if (s1Lbl) s1Lbl.textContent = 'MAGNITUDE';
+                if (s2Lbl) s2Lbl.textContent = 'SAROS';
+                if (s3Lbl) s3Lbl.textContent = 'DURATION';
+                if (s4Lbl) s4Lbl.textContent = 'VISIBILITY';
+                if (glowEl) glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-red-600/20 blur-3xl pointer-events-none transition-all duration-700';
+            } else if (activeFeaturedEvent.category === 'supermoon') {
+                if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_#3b82f6]';
+                if (s1Lbl) s1Lbl.textContent = 'SIZE INCREASE';
+                if (s2Lbl) s2Lbl.textContent = 'PERIGEE';
+                if (s3Lbl) s3Lbl.textContent = 'PHASE';
+                if (s4Lbl) s4Lbl.textContent = 'VISIBILITY';
+                if (glowEl) glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-blue-600/20 blur-3xl pointer-events-none transition-all duration-700';
+            } else if (activeFeaturedEvent.category === 'solar-eclipse') {
+                if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]';
+                if (s1Lbl) s1Lbl.textContent = 'MAGNITUDE';
+                if (s2Lbl) s2Lbl.textContent = 'SAROS';
+                if (s3Lbl) s3Lbl.textContent = 'DURATION';
+                if (s4Lbl) s4Lbl.textContent = 'PATH';
+                if (glowEl) glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-amber-600/20 blur-3xl pointer-events-none transition-all duration-700';
+            } else {
+                if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]';
+                if (s1Lbl) s1Lbl.textContent = 'SEPARATION';
+                if (s2Lbl) s2Lbl.textContent = 'TIMING';
+                if (s3Lbl) s3Lbl.textContent = 'SKY';
+                if (s4Lbl) s4Lbl.textContent = 'HORIZON';
+                if (glowEl) glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-emerald-600/20 blur-3xl pointer-events-none transition-all duration-700';
             }
-            if (magEl) {
-                magEl.textContent = `Mag: ${activeFeaturedEvent.magnitude} • ${activeFeaturedEvent.saros}`;
+
+            if (s1Val) s1Val.textContent = activeFeaturedEvent.magnitude;
+            if (s2Val) s2Val.textContent = activeFeaturedEvent.saros;
+            if (s3Val) s3Val.textContent = activeFeaturedEvent.duration;
+            if (s4Val) {
+                s4Val.textContent = activeFeaturedEvent.visibility;
+                s4Val.title = activeFeaturedEvent.visibility;
             }
+
             if (titleEl) {
                 titleEl.textContent = activeFeaturedEvent.title;
             }
             if (dateStrEl) {
                 dateStrEl.textContent = `${activeFeaturedEvent.date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} • Peak ${activeFeaturedEvent.date.toISOString().slice(11, 16)} UTC`;
-            }
-            if (glowEl) {
-                if (activeFeaturedEvent.category === 'lunar-eclipse') {
-                    glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-red-600/20 blur-3xl pointer-events-none transition-all duration-700';
-                } else if (activeFeaturedEvent.category === 'supermoon') {
-                    glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-blue-600/20 blur-3xl pointer-events-none transition-all duration-700';
-                } else {
-                    glowEl.className = 'absolute -top-12 -right-12 w-44 h-44 rounded-full bg-amber-600/20 blur-3xl pointer-events-none transition-all duration-700';
-                }
             }
 
             // Calculate precise remaining time
