@@ -32,11 +32,23 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Moon Phases Pro">
     <meta name="format-detection" content="telephone=no">
-    <meta name="description" content="Your Daily Moon Phase Companion.">
+    <meta name="description" content="Your Daily Moon Phase Companion with Real-Time 3D Lunar Rendering and Astronomical Ephemeris.">
     <meta name="application-name" content="Moon Phases Pro">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#22223b">
     <meta name="msapplication-TileImage" content="lroc_color_poles_1k.jpg">
+
+    <!-- Canonical URL & Social Metadata for Official Domain -->
+    <link rel="canonical" href="https://www.moonphases.pro/">
+    <meta property="og:title" content="Moon Phases Pro v2.0">
+    <meta property="og:description" content="Your Daily Moon Phase Companion with Real-Time 3D Lunar Rendering and Astronomical Ephemeris.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.moonphases.pro/">
+    <meta property="og:image" content="https://www.moonphases.pro/lroc_color_poles_1k.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Moon Phases Pro v2.0">
+    <meta name="twitter:description" content="Your Daily Moon Phase Companion with Real-Time 3D Lunar Rendering.">
+    <meta name="twitter:image" content="https://www.moonphases.pro/lroc_color_poles_1k.jpg">
     <!-- Production Security & Compliance Headers -->
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https:; object-src 'none'; frame-ancestors 'none';">
@@ -4938,7 +4950,7 @@
             const dt = date;
             const dtStart = `${dt.getUTCFullYear()}${pad(dt.getUTCMonth() + 1)}${pad(dt.getUTCDate())}T120000Z`;
             const dtEnd = `${dt.getUTCFullYear()}${pad(dt.getUTCMonth() + 1)}${pad(dt.getUTCDate())}T130000Z`;
-            const uid = `${title.replace(/\s/g, '')}-${dtStart}@moonphasespro`;
+            const uid = `${title.replace(/\s/g, '')}-${dtStart}@moonphases.pro`;
             return [
                 "BEGIN:VCALENDAR",
                 "VERSION:2.0",
@@ -5229,7 +5241,7 @@
             const nowStr = formatDate(new Date());
             const dtStart = formatDate(event.date);
             const dtEnd = formatDate(event.endDate || new Date(event.date.getTime() + 3 * 3600000));
-            const uid = `celestial-${event.id}@moonphasespro.app`;
+            const uid = `celestial-${event.id}@moonphases.pro`;
 
             const ics = [
                 "BEGIN:VCALENDAR",
